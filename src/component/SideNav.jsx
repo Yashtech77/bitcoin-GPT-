@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
-import { ListCollapse, Trash2, Pencil } from "lucide-react";
-import { Check, X } from "lucide-react";
+import { ListCollapse, Trash2, Pencil, Check, X } from "lucide-react";
 import { useSession } from "../context/SessionContext";
+import { useChat } from "../context/ChatContext"; // ✅ Get messages
+import { toast } from "react-toastify";
 import { createPortal } from "react-dom";
 
 function Portal({ children }) {
   return createPortal(children, document.body);
 }
+
 const SideNav = ({ openToggle, setOpenToggle }) => {
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -14,17 +16,15 @@ const SideNav = ({ openToggle, setOpenToggle }) => {
   const [renameValue, setRenameValue] = useState("");
   const { setCurrentSessionId } = useSession();
   const [openDropdownId, setOpenDropdownId] = useState(null);
+  const [dropdownPosition, setDropdownPosition] = useState({ left: 0, top: 0 });
+  const { messages } = useChat(); // ✅ Get current chat messages
 
   const handleToggle = () => setOpenToggle((prev) => !prev);
-  const [dropdownPosition, setDropdownPosition] = useState({ left: 0, top: 0 });
 
-  // Fetch sessions
   const fetchSessions = async () => {
     setLoading(true);
     try {
-      const res = await fetch(
-        "http://13.235.70.69:8000/sessions/"
-      );
+      const res = await fetch("https://bitcoingpt.techjardemo.in/api/sessions/");
       const data = await res.json();
       setSessions(data);
     } catch (err) {
@@ -37,34 +37,48 @@ const SideNav = ({ openToggle, setOpenToggle }) => {
     fetchSessions();
   }, []);
 
-  // Handle new chat creation
+  // ✅ Only allow new chat if previous one is not empty
   const handleNewChat = async () => {
+    // if (messages.length === 0) {
+    //   toast.warn("Please send a message before starting a new chat.");
+    //   return;
+    // }
+    if (messages.length === 0) {
+  toast.warn("Please send a message before starting a new chat.", {
+    className: "bg-[#E22B2B] border border-[#E22B2B] text-[#E22B2B] font-medium rounded-lg shadow-md",
+    bodyClassName: "text-sm",
+    progressClassName: "bg-[#E22B2B]",
+    icon: "",
+    autoClose: 3000,
+    hideProgressBar: false,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true,
+  });
+  return;
+}
+
     setLoading(true);
     try {
-      const res = await fetch(
-        "http://13.235.70.69:8000/sessions/new",
-        { method: "POST" }
-      );
-      if (!res.ok) {
-        throw new Error("Failed to create new chat session.");
-      }
+      const res = await fetch("https://bitcoingpt.techjardemo.in/api/sessions/new", {
+        method: "POST",
+      });
+      if (!res.ok) throw new Error("Failed to create new chat session.");
       const newSession = await res.json();
       setSessions((prev) => [newSession, ...prev]);
-      setCurrentSessionId(newSession.session_id); // <-- This line opens the new chat!
+      setCurrentSessionId(newSession.session_id);
     } catch (err) {
-      alert("Failed to create new chat session.");
+      toast.error("Failed to create new chat session.");
     }
     setLoading(false);
   };
 
-  // Handle delete session
   const handleDeleteSession = async (session_id) => {
     setLoading(true);
     try {
-      await fetch(
-        `http://13.235.70.69:8000/sessions/${session_id}`,
-        { method: "DELETE" }
-      );
+      await fetch(`https://bitcoingpt.techjardemo.in/api/sessions/${session_id}`, {
+        method: "DELETE",
+      });
       setSessions((prev) => prev.filter((s) => s.session_id !== session_id));
     } catch (err) {
       alert("Failed to delete chat session.");
@@ -72,19 +86,15 @@ const SideNav = ({ openToggle, setOpenToggle }) => {
     setLoading(false);
   };
 
-  // Handle rename session
   const handleRenameSession = async (session_id) => {
     if (!renameValue.trim()) return;
     setLoading(true);
     try {
-      await fetch(
-        `http://13.235.70.69:8000/sessions/${session_id}/rename`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ title: renameValue }),
-        }
-      );
+      await fetch(`https://bitcoingpt.techjardemo.in/api/sessions/${session_id}/rename`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: renameValue }),
+      });
       setSessions((prev) =>
         prev.map((s) =>
           s.session_id === session_id ? { ...s, title: renameValue } : s
@@ -97,11 +107,11 @@ const SideNav = ({ openToggle, setOpenToggle }) => {
     }
     setLoading(false);
   };
+
   useEffect(() => {
     const handleClickOutside = () => {
       setOpenDropdownId(null);
     };
-
     document.addEventListener("click", handleClickOutside);
     return () => document.removeEventListener("click", handleClickOutside);
   }, []);
@@ -123,11 +133,11 @@ const SideNav = ({ openToggle, setOpenToggle }) => {
   }
 
   return (
-    <div className="w-full h-[85vh] bg-[#ffffff] p-4  flex flex-col justify-start transition-all duration-300  ">
+    <div className="w-full h-[85vh] bg-[#ffffff] p-4 flex flex-col justify-start transition-all duration-300">
       {/* Header */}
       <div>
-        <div className="flex justify-between  items-center  mb-4">
-          <h2 className="text-2xl font-semibold bg-[#E22B2B] text-white rounded-full w-full text-center py-2 px-4 cursor-pointer ">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-2xl font-semibold bg-[#E22B2B] text-white rounded-full w-full text-center py-2 px-4 cursor-pointer">
             Chat History
           </h2>
         </div>
@@ -145,11 +155,10 @@ const SideNav = ({ openToggle, setOpenToggle }) => {
                   key={session.session_id || idx}
                   className="relative group bg-white text-[#6e1c1c] hover:bg-[#E22B2B] hover:text-white rounded-full px-2 py-2 flex justify-between items-center cursor-pointer"
                   onClick={() => {
-                    console.log("Clicked session:", session.session_id);
                     setCurrentSessionId(session.session_id);
                   }}
                 >
-                  {/* Title or Rename Input */}
+                  {/* Rename input OR title */}
                   {renamingId === session.session_id ? (
                     <div className="flex items-center gap-2 w-full">
                       <input
@@ -157,8 +166,7 @@ const SideNav = ({ openToggle, setOpenToggle }) => {
                         value={renameValue}
                         onChange={(e) => setRenameValue(e.target.value)}
                         onKeyDown={(e) => {
-                          if (e.key === "Enter")
-                            handleRenameSession(session.session_id);
+                          if (e.key === "Enter") handleRenameSession(session.session_id);
                           if (e.key === "Escape") {
                             setRenamingId(null);
                             setRenameValue("");
@@ -167,9 +175,7 @@ const SideNav = ({ openToggle, setOpenToggle }) => {
                         autoFocus
                         disabled={loading}
                       />
-                      <button
-                        onClick={() => handleRenameSession(session.session_id)}
-                      >
+                      <button onClick={() => handleRenameSession(session.session_id)}>
                         <Check size={16} />
                       </button>
                       <button
@@ -187,20 +193,17 @@ const SideNav = ({ openToggle, setOpenToggle }) => {
                         {session.title || "No Title"}
                       </span>
 
-                      {/* Three Dots Icon - Show on Hover */}
                       <div
-                        className="relative ml-2 group-hover:opacity-100 opacity-0  transition"
+                        className="relative ml-2 group-hover:opacity-100 opacity-0 transition"
                         onClick={(e) => {
                           e.stopPropagation();
                           const rect = e.currentTarget.getBoundingClientRect();
                           setDropdownPosition({
-                            left: rect.right - 128, // 128px = w-32, adjust as needed
-                            top: rect.bottom + 8, // 8px offset for spacing
+                            left: rect.right - 128,
+                            top: rect.bottom + 8,
                           });
                           setOpenDropdownId((prev) =>
-                            prev === session.session_id
-                              ? null
-                              : session.session_id
+                            prev === session.session_id ? null : session.session_id
                           );
                         }}
                       >
@@ -216,7 +219,6 @@ const SideNav = ({ openToggle, setOpenToggle }) => {
                           <circle cx="19" cy="12" r="1.5" />
                         </svg>
 
-                        {/* Dropdown Menu */}
                         {openDropdownId === session.session_id && (
                           <Portal>
                             <div
@@ -224,7 +226,7 @@ const SideNav = ({ openToggle, setOpenToggle }) => {
                                 position: "fixed",
                                 left: dropdownPosition.left,
                                 top: dropdownPosition.top,
-                                width: "8rem", // w-32
+                                width: "8rem",
                                 zIndex: 9999,
                               }}
                               className="bg-white text-black rounded-md shadow-lg"

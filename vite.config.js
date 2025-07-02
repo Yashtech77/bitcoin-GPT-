@@ -8,7 +8,7 @@ export default defineConfig({
   server: {
     proxy: {
       "/chat": {
-        target: "https://bitcoingpt-backkend.onrender.com",
+        target: "https://bitcoingpt.techjardemo.in/api/",
         changeOrigin: true,
         secure: false,
       },

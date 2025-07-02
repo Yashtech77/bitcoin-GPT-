@@ -13,7 +13,6 @@ export function ChatProvider({ children }) {
   const { currentSessionId, setCurrentSessionId } = useSession();
 
   useEffect(() => {
-    console.log("Fetching details for:", currentSessionId);
     if (!currentSessionId) {
       setMessages([]);
       setVideoUrl(null);
@@ -22,13 +21,12 @@ export function ChatProvider({ children }) {
     }
 
     setLoading(true);
-    fetch(`http://13.235.70.69:8000/sessions/${currentSessionId}/`)
+    fetch(`https://bitcoingpt.techjardemo.in/api/sessions/${currentSessionId}/`)
       .then((res) => {
         if (!res.ok) throw new Error(`Failed to fetch session: ${res.status}`);
         return res.json();
       })
       .then((data) => {
-        console.log("Fetched data for session:", currentSessionId, data);
         if (Array.isArray(data)) {
           setMessages(data);
           setSessionId(currentSessionId);
@@ -38,7 +36,18 @@ export function ChatProvider({ children }) {
           setMessages(data.history);
           setSessionId(currentSessionId);
           setVideoUrl(data.video_url || null);
-          setYoutubeLinks(data.youtube_links || []);
+
+          // ✅ Append new YouTube links without duplicating
+          setYoutubeLinks((prevLinks) => {
+            const newLinks = data.youtube_links || [];
+            const allLinks = [...prevLinks];
+            newLinks.forEach((link) => {
+              if (!allLinks.some((existing) => existing.url === link.url)) {
+                allLinks.push(link);
+              }
+            });
+            return allLinks;
+          });
         } else {
           console.error("Invalid data format received:", data);
           setMessages([]);
@@ -57,23 +66,20 @@ export function ChatProvider({ children }) {
     setLoading(true);
     try {
       let sid = currentSessionId;
-      let isNewSession = false;
 
       if (!sid) {
-        const newSessionRes = await fetch("http://13.235.70.69:8000/sessions/new", { method: "POST" });
+        const newSessionRes = await fetch("https://bitcoingpt.techjardemo.in/api/new", { method: "POST" });
         if (!newSessionRes.ok) throw new Error("Failed to create new session");
         const newSessionData = await newSessionRes.json();
         sid = newSessionData.session_id;
         setCurrentSessionId(sid);
-        isNewSession = true;
 
-        // ✅ Clear old data when new session starts
         setMessages([]);
         setVideoUrl(null);
         setYoutubeLinks([]);
       }
 
-      const res = await fetch("http://13.235.70.69:8000/chat/", {
+      const res = await fetch("https://bitcoingpt.techjardemo.in/api/chat/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -98,7 +104,18 @@ export function ChatProvider({ children }) {
         setMessages(data.history);
         setSessionId(data.session_id);
         setVideoUrl(data.video_url || null);
-        setYoutubeLinks(data.youtube_links || []);
+
+        // ✅ Append new YouTube links without duplicating
+        setYoutubeLinks((prevLinks) => {
+          const newLinks = data.youtube_links || [];
+          const allLinks = [...prevLinks];
+          newLinks.forEach((link) => {
+            if (!allLinks.some((existing) => existing.url === link.url)) {
+              allLinks.push(link);
+            }
+          });
+          return allLinks;
+        });
       } else {
         console.error("Invalid response data:", data);
         throw new Error("Invalid response format from server");

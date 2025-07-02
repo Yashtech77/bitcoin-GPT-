@@ -2,7 +2,7 @@
 import { useState } from "react";
 import axios from "axios";
 
-const API_URL = "http://13.235.70.69:8000/chat/";
+const API_URL = "https://bitcoingpt.techjardemo.in/api/chat/";
 
 const useChatApi = () => {
   const [loading, setLoading] = useState(false);

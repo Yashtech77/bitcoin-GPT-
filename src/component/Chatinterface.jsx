@@ -89,7 +89,7 @@ export default function Chatinterface() {
           </form>
         </div>
 
-        <div className="w-[300px] bg-white rounded-lg p-4 h-[88vh] overflow-y-auto">
+        <div className="w-[300px] bg-white rounded-lg p-4 h-[87vh] overflow-hidden">
           <RightNav />
         </div>
       </div>

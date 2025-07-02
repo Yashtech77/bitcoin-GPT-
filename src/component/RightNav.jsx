@@ -6,11 +6,6 @@ const RightNav = () => {
   const { youtubeLinks = [] } = useChat();
   const [selectedVideo, setSelectedVideo] = useState(null);
 
-  // ✅ Close popup when youtubeLinks change (e.g., on new chat)
-  useEffect(() => {
-    setSelectedVideo(null);
-  }, [youtubeLinks]);
-
   const extractVideoId = (url) => {
     try {
       const parsedUrl = new URL(url);
@@ -29,12 +24,12 @@ const RightNav = () => {
   const handleClosePopup = () => setSelectedVideo(null);
 
   return (
-    <div className="w-64 rounded-md bg-[#FEF1E6] p-4 flex flex-col items-center relative">
+    <div className="w-64  rounded-md p-4 flex flex-col items-center relative">
       <h2 className="text-2xl font-semibold bg-[#E22B2B] text-white rounded-full w-full text-center py-2 px-4 cursor-pointer">
         Video
       </h2>
 
-      <div className="space-y-6 mt-4 w-full">
+      <div className="space-y-6 mt-4 w-full overflow-y-auto max-h-[75vh]">
         {youtubeLinks.length > 0 ? (
           youtubeLinks.map((video, index) => {
             const videoId = extractVideoId(video.url);
@@ -44,7 +39,7 @@ const RightNav = () => {
 
             return (
               <div
-                key={index}
+                key={`${video.url}-${index}`}
                 className="relative border border-black rounded-md overflow-hidden cursor-pointer w-full"
                 onClick={() => handleOpenPopup(video)}
               >
@@ -69,7 +64,6 @@ const RightNav = () => {
         )}
       </div>
 
-      {/* Modal Popup */}
       {selectedVideo && (
         <div className="fixed inset-0 bg-white/30 shadow-xl backdrop-blur-md bg-opacity-50 z-50 flex justify-center items-center">
           <div className="bg-white p-6 rounded-md shadow-xl max-w-3xl w-full relative">
