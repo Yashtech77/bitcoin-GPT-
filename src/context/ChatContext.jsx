@@ -8,7 +8,7 @@ export function ChatProvider({ children }) {
   const [sessionId, setSessionId] = useState(null);
   const [loading, setLoading] = useState(false);
   const [videoUrl, setVideoUrl] = useState(null);
-  const [youtubeLinks, setYoutubeLinks] = useState([]); // ✅ NEW
+  const [youtubeLinks, setYoutubeLinks] = useState([]);
 
   const { currentSessionId, setCurrentSessionId } = useSession();
 
@@ -17,16 +17,14 @@ export function ChatProvider({ children }) {
     if (!currentSessionId) {
       setMessages([]);
       setVideoUrl(null);
-      setYoutubeLinks([]); // ✅ clear links when session resets
+      setYoutubeLinks([]);
       return;
     }
 
     setLoading(true);
     fetch(`http://13.235.70.69:8000/sessions/${currentSessionId}/`)
       .then((res) => {
-        if (!res.ok) {
-          throw new Error(`Failed to fetch session: ${res.status}`);
-        }
+        if (!res.ok) throw new Error(`Failed to fetch session: ${res.status}`);
         return res.json();
       })
       .then((data) => {
@@ -34,15 +32,17 @@ export function ChatProvider({ children }) {
         if (Array.isArray(data)) {
           setMessages(data);
           setSessionId(currentSessionId);
+          setVideoUrl(null);
+          setYoutubeLinks([]);
         } else if (Array.isArray(data.history)) {
           setMessages(data.history);
           setSessionId(currentSessionId);
           setVideoUrl(data.video_url || null);
-          setYoutubeLinks(data.youtube_links || []); // ✅ fetch latest YouTube links
+          setYoutubeLinks(data.youtube_links || []);
         } else {
           console.error("Invalid data format received:", data);
           setMessages([]);
-          setYoutubeLinks([]); // ✅ fallback
+          setYoutubeLinks([]);
         }
       })
       .catch((error) => {
@@ -57,17 +57,20 @@ export function ChatProvider({ children }) {
     setLoading(true);
     try {
       let sid = currentSessionId;
+      let isNewSession = false;
+
       if (!sid) {
-        const newSessionRes = await fetch(
-          "http://13.235.70.69:8000/sessions/new",
-          { method: "POST" }
-        );
-        if (!newSessionRes.ok) {
-          throw new Error("Failed to create new session");
-        }
+        const newSessionRes = await fetch("http://13.235.70.69:8000/sessions/new", { method: "POST" });
+        if (!newSessionRes.ok) throw new Error("Failed to create new session");
         const newSessionData = await newSessionRes.json();
         sid = newSessionData.session_id;
         setCurrentSessionId(sid);
+        isNewSession = true;
+
+        // ✅ Clear old data when new session starts
+        setMessages([]);
+        setVideoUrl(null);
+        setYoutubeLinks([]);
       }
 
       const res = await fetch("http://13.235.70.69:8000/chat/", {
@@ -75,10 +78,7 @@ export function ChatProvider({ children }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           session_id: sid,
-          message: {
-            role: "user",
-            content: userMessage,
-          },
+          message: { role: "user", content: userMessage },
         }),
       });
 
@@ -92,12 +92,13 @@ export function ChatProvider({ children }) {
       if (Array.isArray(data)) {
         setMessages(data);
         setSessionId(sid);
-        setYoutubeLinks([]); // ✅ fallback if no data.history
+        setVideoUrl(null);
+        setYoutubeLinks([]);
       } else if (Array.isArray(data.history)) {
         setMessages(data.history);
         setSessionId(data.session_id);
         setVideoUrl(data.video_url || null);
-        setYoutubeLinks(data.youtube_links || []); // ✅ update video links
+        setYoutubeLinks(data.youtube_links || []);
       } else {
         console.error("Invalid response data:", data);
         throw new Error("Invalid response format from server");
@@ -110,9 +111,7 @@ export function ChatProvider({ children }) {
   };
 
   return (
-    <ChatContext.Provider
-      value={{ messages, sendMessage, loading, videoUrl, youtubeLinks }} // ✅ Pass links
-    >
+    <ChatContext.Provider value={{ messages, sendMessage, loading, videoUrl, youtubeLinks }}>
       {children}
     </ChatContext.Provider>
   );

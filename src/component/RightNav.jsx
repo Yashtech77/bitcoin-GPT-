@@ -1,10 +1,15 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Play } from "lucide-react";
 import { useChat } from "../context/ChatContext";
 
 const RightNav = () => {
-  const { youtubeLinks = [] } = useChat(); // ✅ Uses context from ChatProvider
+  const { youtubeLinks = [] } = useChat();
   const [selectedVideo, setSelectedVideo] = useState(null);
+
+  // ✅ Close popup when youtubeLinks change (e.g., on new chat)
+  useEffect(() => {
+    setSelectedVideo(null);
+  }, [youtubeLinks]);
 
   const extractVideoId = (url) => {
     try {
@@ -76,7 +81,9 @@ const RightNav = () => {
             </button>
             <div className="relative w-full h-0 pb-[56.25%] mb-4">
               <iframe
-                src={`https://www.youtube.com/embed/${extractVideoId(selectedVideo.url)}`}
+                src={`https://www.youtube.com/embed/${extractVideoId(
+                  selectedVideo.url
+                )}`}
                 frameBorder="0"
                 allow="autoplay; fullscreen; picture-in-picture"
                 allowFullScreen
