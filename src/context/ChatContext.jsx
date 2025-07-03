@@ -31,11 +31,18 @@ export function ChatProvider({ children }) {
         if (Array.isArray(data.messages)) {
           setMessages(data.messages);
           setSessionId(currentSessionId);
-          setVideoUrl(null);
+          setVideoUrl(data.video_url || null);
           setYoutubeLinks(data.saved_videos || []);
         } else {
-          console.error("Invalid data format received:", data);
-          setMessages([]);
+          // Show the reply even if messages are not returned
+          if (data.reply) {
+            setMessages([
+              { role: "assistant", content: data.reply }
+            ]);
+          } else {
+            setMessages([]);
+          }
+          setVideoUrl(null);
           setYoutubeLinks([]);
         }
       })
@@ -80,12 +87,7 @@ export function ChatProvider({ children }) {
 
       const data = await res.json();
 
-      if (Array.isArray(data)) {
-        setMessages(data);
-        setSessionId(sid);
-        setVideoUrl(null);
-        setYoutubeLinks([]);
-      } else if (Array.isArray(data.messages)) {
+      if (Array.isArray(data.messages)) {
         setMessages(data.messages);
         setSessionId(data.session_id);
         setVideoUrl(data.video_url || null);
@@ -100,6 +102,14 @@ export function ChatProvider({ children }) {
           });
           return allLinks;
         });
+      } else if (data.reply) {
+        setMessages([
+          { role: "user", content: userMessage },
+          { role: "assistant", content: data.reply }
+        ]);
+        setSessionId(sid);
+        setVideoUrl(data.video_url || null);
+        setYoutubeLinks(data.youtube_links || []);
       } else {
         console.error("Invalid response data:", data);
         throw new Error("Invalid response format from server");

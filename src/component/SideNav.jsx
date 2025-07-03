@@ -157,6 +157,9 @@ const SideNav = ({ openToggle, setOpenToggle }) => {
                   className="relative group bg-white text-[#6e1c1c] hover:bg-[#E22B2B] hover:text-white rounded-full px-2 py-2 flex justify-between items-center cursor-pointer"
                   onClick={() => {
                     setCurrentSessionId(session.session_id);
+                    if (window.innerWidth < 768) {
+                      setOpenToggle(false); // ✅ Close SideNav on mobile
+                    }
                   }}
                 >
                   {renamingId === session.session_id ? (
