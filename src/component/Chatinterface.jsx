@@ -3,11 +3,13 @@ import SideNav from "./SideNav";
 import { useChat } from "../context/ChatContext";
 import ReactMarkdown from "react-markdown";
 import RightNav from "./RightNav";
+import { Menu, PanelRight } from "lucide-react"; // NEW
 
 export default function Chatinterface() {
   const [input, setInput] = useState("");
   const { messages, sendMessage, loading } = useChat();
-  const [openToggle, setOpenToggle] = useState(true);
+  const [showSideNav, setShowSideNav] = useState(false); // NEW
+  const [showRightNav, setShowRightNav] = useState(false); // NEW
 
   useEffect(() => {
     console.log("Messages updated:", messages);
@@ -21,23 +23,43 @@ export default function Chatinterface() {
   };
 
   return (
-    <div className="w-full h-[89vh] bg-blue-100 p-4">
-      <div className="flex h-full gap-4">
-        {openToggle && (
-          <div className="w-[250px] h-[87vh] bg-white rounded-lg p-2">
-            <SideNav openToggle={openToggle} setOpenToggle={setOpenToggle} />
+    <div className="w-full h-[89vh] bg-blue-100 p-2 md:p-4">
+      {/* Mobile Nav Toggles */}
+      <div className="md:hidden flex justify-between items-center mb-2">
+        <button onClick={() => setShowSideNav(true)}>
+          <Menu className="text-red-700" />
+        </button>
+        <button onClick={() => setShowRightNav(true)}>
+          <PanelRight className="text-red-700" />
+        </button>
+      </div>
+
+      <div className="flex h-full gap-2 md:gap-4 md:flex-row flex-col">
+        {/* Desktop SideNav */}
+        <div className="hidden md:block w-[250px] h-[87vh] bg-white rounded-lg p-2">
+          <SideNav openToggle={true} setOpenToggle={setShowSideNav} />
+        </div>
+
+        {/* Mobile SideNav */}
+        {showSideNav && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex">
+            <div className="bg-white w-[250px] h-full p-2 overflow-y-auto">
+              <SideNav openToggle={true} setOpenToggle={setShowSideNav} />
+            </div>
+            <div className="flex-1" onClick={() => setShowSideNav(false)}></div>
           </div>
         )}
 
-        <div className="flex flex-col bg-[#fdfdfd] p-4 rounded-lg justify-between  flex-1 h-[89vh] overflow-hidden">
-          <div className="flex-1 overflow-y-auto  custom-scrollbar pb-5">
+        {/* Main Chat Section */}
+        <div className="flex flex-col bg-[#fdfdfd] p-4 rounded-lg justify-between flex-1 h-[89vh] overflow-hidden">
+          <div className="flex-1 overflow-y-auto custom-scrollbar pb-5">
             {messages.length === 0 && !loading ? (
               <div className="flex flex-col justify-center items-center h-full">
-                <img src="/logo.png" className="w-52 h-52" />
-                <h1 className="text-4xl font-bold text-[#E22B2B] mt-4">
+                <img src="/logo.png" className="w-40 h-40 md:w-52 md:h-52" />
+                <h1 className="text-2xl md:text-4xl font-bold text-[#E22B2B] mt-4">
                   Bitcoin GPT
                 </h1>
-                <p className="text-lg text-[#6e1c1c]">
+                <p className="text-md md:text-lg text-[#6e1c1c] text-center">
                   ( Where Curiosity Meets Bitcoin, Powered by AI )
                 </p>
               </div>
@@ -45,14 +67,14 @@ export default function Chatinterface() {
               messages.map((msg, idx) => (
                 <div
                   key={idx}
-                  className={`relative rounded-md shadow p-1 mb-4 ${
+                  className={`relative rounded-md shadow p-1 mb-4 text-sm md:text-base ${
                     msg.role === "user"
-                      ? "bg-red-50 border border-gray-400 w-1/2 ml-auto"
-                      : "bg-white ml-4 mr-48"
+                      ? "bg-red-50 border border-gray-400 w-full md:w-1/2 ml-auto"
+                      : "bg-white ml-0 md:ml-4 md:mr-48"
                   }`}
                 >
                   <div className="flex items-center justify-center">
-                    <span className="text-black text-xl m-3">
+                    <span className="text-black m-3">
                       <ReactMarkdown>{msg.content}</ReactMarkdown>
                     </span>
                   </div>
@@ -66,7 +88,7 @@ export default function Chatinterface() {
             )}
           </div>
 
-          <form className="relative mt-4 w-full" onSubmit={handleSend}>
+          <form className="relative mt-2 w-full" onSubmit={handleSend}>
             <input
               type="text"
               placeholder="Ask Anything About bitcoin"
@@ -83,15 +105,26 @@ export default function Chatinterface() {
               <img
                 src="/send-message.jpg"
                 alt="send"
-                className="h-full shadow-xl/30 hover:shadow-xl/40 w-full object-contain rounded-full"
+                className="h-full w-full object-contain rounded-full"
               />
             </button>
           </form>
         </div>
 
-        <div className="w-[300px] bg-white rounded-lg p-4 h-[87vh] overflow-hidden">
+        {/* Desktop RightNav */}
+        <div className="hidden md:block w-[300px] bg-white rounded-lg p-4 h-[87vh] overflow-hidden">
           <RightNav />
         </div>
+
+        {/* Mobile RightNav */}
+        {showRightNav && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-end">
+            <div className="bg-white w-[300px] h-full p-4 overflow-y-auto">
+              <RightNav />
+            </div>
+            <div className="flex-1" onClick={() => setShowRightNav(false)}></div>
+          </div>
+        )}
       </div>
     </div>
   );
