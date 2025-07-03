@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { ListCollapse, Trash2, Pencil, Check, X } from "lucide-react";
 import { useSession } from "../context/SessionContext";
-import { useChat } from "../context/ChatContext"; // ✅ Get messages
+import { useChat } from "../context/ChatContext";
 import { toast } from "react-toastify";
 import { createPortal } from "react-dom";
+
+const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 function Portal({ children }) {
   return createPortal(children, document.body);
@@ -17,50 +19,47 @@ const SideNav = ({ openToggle, setOpenToggle }) => {
   const { setCurrentSessionId } = useSession();
   const [openDropdownId, setOpenDropdownId] = useState(null);
   const [dropdownPosition, setDropdownPosition] = useState({ left: 0, top: 0 });
-  const { messages } = useChat(); // ✅ Get current chat messages
+  const { messages } = useChat();
 
   const handleToggle = () => setOpenToggle((prev) => !prev);
 
   const fetchSessions = async () => {
     setLoading(true);
     try {
-      const res = await fetch("https://bitcoingpt.techjardemo.in/api/sessions/");
+      const res = await fetch(`${BASE_URL}/sessions/`);
       const data = await res.json();
       setSessions(data);
     } catch (err) {
       setSessions([]);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   useEffect(() => {
     fetchSessions();
   }, []);
 
-  // ✅ Only allow new chat if previous one is not empty
   const handleNewChat = async () => {
-    // if (messages.length === 0) {
-    //   toast.warn("Please send a message before starting a new chat.");
-    //   return;
-    // }
     if (messages.length === 0) {
-  toast.warn("Please send a message before starting a new chat.", {
-    className: "bg-[#E22B2B] border border-[#E22B2B] text-[#E22B2B] font-medium rounded-lg shadow-md",
-    bodyClassName: "text-sm",
-    progressClassName: "bg-[#E22B2B]",
-    icon: "",
-    autoClose: 3000,
-    hideProgressBar: false,
-    closeOnClick: true,
-    pauseOnHover: true,
-    draggable: true,
-  });
-  return;
-}
+      toast.warn("Please send a message before starting a new chat.", {
+        className:
+          "bg-[#E22B2B] border border-[#E22B2B] text-[#E22B2B] font-medium rounded-lg shadow-md",
+        bodyClassName: "text-sm",
+        progressClassName: "bg-[#E22B2B]",
+        icon: "",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+      return;
+    }
 
     setLoading(true);
     try {
-      const res = await fetch("https://bitcoingpt.techjardemo.in/api/sessions/new", {
+      const res = await fetch(`${BASE_URL}/sessions/new`, {
         method: "POST",
       });
       if (!res.ok) throw new Error("Failed to create new chat session.");
@@ -69,32 +68,35 @@ const SideNav = ({ openToggle, setOpenToggle }) => {
       setCurrentSessionId(newSession.session_id);
     } catch (err) {
       toast.error("Failed to create new chat session.");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const handleDeleteSession = async (session_id) => {
     setLoading(true);
     try {
-      await fetch(`https://bitcoingpt.techjardemo.in/api/sessions/${session_id}`, {
+      await fetch(`${BASE_URL}/sessions/${session_id}`, {
         method: "DELETE",
       });
       setSessions((prev) => prev.filter((s) => s.session_id !== session_id));
     } catch (err) {
       alert("Failed to delete chat session.");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const handleRenameSession = async (session_id) => {
     if (!renameValue.trim()) return;
     setLoading(true);
     try {
-      await fetch(`https://bitcoingpt.techjardemo.in/api/sessions/${session_id}/rename`, {
+      await fetch(`${BASE_URL}/sessions/${session_id}/rename`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ title: renameValue }),
       });
+
       setSessions((prev) =>
         prev.map((s) =>
           s.session_id === session_id ? { ...s, title: renameValue } : s
@@ -104,8 +106,9 @@ const SideNav = ({ openToggle, setOpenToggle }) => {
       setRenameValue("");
     } catch (err) {
       alert("Failed to rename chat session.");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   useEffect(() => {
@@ -134,7 +137,6 @@ const SideNav = ({ openToggle, setOpenToggle }) => {
 
   return (
     <div className="w-full h-[85vh] bg-[#ffffff] p-4 flex flex-col justify-start transition-all duration-300">
-      {/* Header */}
       <div>
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-2xl font-semibold bg-[#E22B2B] text-white rounded-full w-full text-center py-2 px-4 cursor-pointer">
@@ -142,7 +144,6 @@ const SideNav = ({ openToggle, setOpenToggle }) => {
           </h2>
         </div>
 
-        {/* Chat List */}
         <div className="flex-1 min-h-0 flex flex-col">
           <div className="overflow-y-auto max-h-[calc(100vh-300px)] custom-scrollbar gap-3 flex flex-col">
             {loading ? (
@@ -158,7 +159,6 @@ const SideNav = ({ openToggle, setOpenToggle }) => {
                     setCurrentSessionId(session.session_id);
                   }}
                 >
-                  {/* Rename input OR title */}
                   {renamingId === session.session_id ? (
                     <div className="flex items-center gap-2 w-full">
                       <input
@@ -166,7 +166,8 @@ const SideNav = ({ openToggle, setOpenToggle }) => {
                         value={renameValue}
                         onChange={(e) => setRenameValue(e.target.value)}
                         onKeyDown={(e) => {
-                          if (e.key === "Enter") handleRenameSession(session.session_id);
+                          if (e.key === "Enter")
+                            handleRenameSession(session.session_id);
                           if (e.key === "Escape") {
                             setRenamingId(null);
                             setRenameValue("");
@@ -175,7 +176,9 @@ const SideNav = ({ openToggle, setOpenToggle }) => {
                         autoFocus
                         disabled={loading}
                       />
-                      <button onClick={() => handleRenameSession(session.session_id)}>
+                      <button
+                        onClick={() => handleRenameSession(session.session_id)}
+                      >
                         <Check size={16} />
                       </button>
                       <button
@@ -190,7 +193,7 @@ const SideNav = ({ openToggle, setOpenToggle }) => {
                   ) : (
                     <div className="flex justify-between items-center w-full">
                       <span className="text-sm truncate max-w-[160px]">
-                        {session.title || "No Title"}
+                        {session.title?.trim() || "Untitled"}
                       </span>
 
                       <div
@@ -203,7 +206,9 @@ const SideNav = ({ openToggle, setOpenToggle }) => {
                             top: rect.bottom + 8,
                           });
                           setOpenDropdownId((prev) =>
-                            prev === session.session_id ? null : session.session_id
+                            prev === session.session_id
+                              ? null
+                              : session.session_id
                           );
                         }}
                       >
@@ -264,7 +269,6 @@ const SideNav = ({ openToggle, setOpenToggle }) => {
         </div>
       </div>
 
-      {/* Footer */}
       <div className="mt-6 border-t border-[#6e1c1c]/20 pt-4">
         <button
           className="w-full bg-[#E22B2B] shadow-xl/30 hover:shadow-xl/40 text-white rounded-full py-2 text-sm"

@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect } from "react";
 import { useSession } from "./SessionContext";
 
 const ChatContext = createContext();
+const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export function ChatProvider({ children }) {
   const [messages, setMessages] = useState([]);
@@ -21,7 +22,7 @@ export function ChatProvider({ children }) {
     }
 
     setLoading(true);
-    fetch(`https://bitcoingpt.techjardemo.in/api/sessions/${currentSessionId}/`)
+    fetch(`${BASE_URL}/sessions/${currentSessionId}/`)
       .then((res) => {
         if (!res.ok) throw new Error(`Failed to fetch session: ${res.status}`);
         return res.json();
@@ -68,7 +69,7 @@ export function ChatProvider({ children }) {
       let sid = currentSessionId;
 
       if (!sid) {
-        const newSessionRes = await fetch("https://bitcoingpt.techjardemo.in/api/new", { method: "POST" });
+        const newSessionRes = await fetch(`${BASE_URL}/sessions/new`, { method: "POST" });
         if (!newSessionRes.ok) throw new Error("Failed to create new session");
         const newSessionData = await newSessionRes.json();
         sid = newSessionData.session_id;
@@ -79,7 +80,7 @@ export function ChatProvider({ children }) {
         setYoutubeLinks([]);
       }
 
-      const res = await fetch("https://bitcoingpt.techjardemo.in/api/chat/", {
+      const res = await fetch(`${BASE_URL}/chat/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -105,7 +106,6 @@ export function ChatProvider({ children }) {
         setSessionId(data.session_id);
         setVideoUrl(data.video_url || null);
 
-        // ✅ Append new YouTube links without duplicating
         setYoutubeLinks((prevLinks) => {
           const newLinks = data.youtube_links || [];
           const allLinks = [...prevLinks];
