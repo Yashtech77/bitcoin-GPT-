@@ -3,13 +3,15 @@ import SideNav from "./SideNav";
 import { useChat } from "../context/ChatContext";
 import ReactMarkdown from "react-markdown";
 import RightNav from "./RightNav";
-import { Menu, PanelRight } from "lucide-react"; // NEW
+import { Menu, PanelRight } from "lucide-react";
+import { useSession } from "../context/SessionContext";
 
 export default function Chatinterface() {
   const [input, setInput] = useState("");
   const { messages, sendMessage, loading } = useChat();
-  const [showSideNav, setShowSideNav] = useState(false); // NEW
-  const [showRightNav, setShowRightNav] = useState(false); // NEW
+  const { setCurrentSessionId } = useSession();
+  const [showSideNav, setShowSideNav] = useState(false);
+  const [showRightNav, setShowRightNav] = useState(false);
 
   useEffect(() => {
     console.log("Messages updated:", messages);
@@ -20,6 +22,11 @@ export default function Chatinterface() {
     if (!input.trim()) return;
     await sendMessage(input);
     setInput("");
+  };
+
+  const handleSessionSelect = (sessionId) => {
+    setCurrentSessionId(sessionId);
+    setShowSideNav(false); // hide SideNav on mobile
   };
 
   return (
@@ -37,14 +44,14 @@ export default function Chatinterface() {
       <div className="flex h-full gap-2 md:gap-4 md:flex-row flex-col">
         {/* Desktop SideNav */}
         <div className="hidden md:block w-[250px] h-[87vh] bg-white rounded-lg p-2">
-          <SideNav openToggle={true} setOpenToggle={setShowSideNav} />
+          <SideNav openToggle={true} setOpenToggle={setShowSideNav} onSessionSelect={handleSessionSelect} />
         </div>
 
         {/* Mobile SideNav */}
         {showSideNav && (
           <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex">
             <div className="bg-white w-[250px] h-full p-2 overflow-y-auto">
-              <SideNav openToggle={true} setOpenToggle={setShowSideNav} />
+              <SideNav openToggle={true} setOpenToggle={setShowSideNav} onSessionSelect={handleSessionSelect} />
             </div>
             <div className="flex-1" onClick={() => setShowSideNav(false)}></div>
           </div>
@@ -60,7 +67,7 @@ export default function Chatinterface() {
                   Bitcoin GPT
                 </h1>
                 <p className="text-md md:text-lg text-[#6e1c1c] text-center">
-                  ( Where Curiosity Meets Bitcoin, Powered by AI )
+                  ( Where Curiosity Meets Bitcoin, Powered by AI )
                 </p>
               </div>
             ) : (
@@ -88,6 +95,7 @@ export default function Chatinterface() {
             )}
           </div>
 
+          {/* Chat Input */}
           <form className="relative mt-2 w-full" onSubmit={handleSend}>
             <input
               type="text"

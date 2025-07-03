@@ -28,27 +28,11 @@ export function ChatProvider({ children }) {
         return res.json();
       })
       .then((data) => {
-        if (Array.isArray(data)) {
-          setMessages(data);
+        if (Array.isArray(data.messages)) {
+          setMessages(data.messages);
           setSessionId(currentSessionId);
           setVideoUrl(null);
-          setYoutubeLinks([]);
-        } else if (Array.isArray(data.history)) {
-          setMessages(data.history);
-          setSessionId(currentSessionId);
-          setVideoUrl(data.video_url || null);
-
-          // ✅ Append new YouTube links without duplicating
-          setYoutubeLinks((prevLinks) => {
-            const newLinks = data.youtube_links || [];
-            const allLinks = [...prevLinks];
-            newLinks.forEach((link) => {
-              if (!allLinks.some((existing) => existing.url === link.url)) {
-                allLinks.push(link);
-              }
-            });
-            return allLinks;
-          });
+          setYoutubeLinks(data.saved_videos || []);
         } else {
           console.error("Invalid data format received:", data);
           setMessages([]);
@@ -101,13 +85,13 @@ export function ChatProvider({ children }) {
         setSessionId(sid);
         setVideoUrl(null);
         setYoutubeLinks([]);
-      } else if (Array.isArray(data.history)) {
-        setMessages(data.history);
+      } else if (Array.isArray(data.messages)) {
+        setMessages(data.messages);
         setSessionId(data.session_id);
         setVideoUrl(data.video_url || null);
 
         setYoutubeLinks((prevLinks) => {
-          const newLinks = data.youtube_links || [];
+          const newLinks = data.saved_videos || [];
           const allLinks = [...prevLinks];
           newLinks.forEach((link) => {
             if (!allLinks.some((existing) => existing.url === link.url)) {
