@@ -34,11 +34,8 @@ export function ChatProvider({ children }) {
           setVideoUrl(data.video_url || null);
           setYoutubeLinks(data.saved_videos || []);
         } else {
-          // Show the reply even if messages are not returned
           if (data.reply) {
-            setMessages([
-              { role: "assistant", content: data.reply }
-            ]);
+            setMessages([{ role: "assistant", content: data.reply }]);
           } else {
             setMessages([]);
           }
@@ -60,15 +57,22 @@ export function ChatProvider({ children }) {
       let sid = currentSessionId;
 
       if (!sid) {
-        const newSessionRes = await fetch(`${BASE_URL}/sessions/new`, { method: "POST" });
+        // Create new session
+        const newSessionRes = await fetch(`${BASE_URL}/sessions/new`, {
+          method: "POST",
+        });
         if (!newSessionRes.ok) throw new Error("Failed to create new session");
         const newSessionData = await newSessionRes.json();
         sid = newSessionData.session_id;
         setCurrentSessionId(sid);
 
-        setMessages([]);
+        // Show user's first message immediately
+        setMessages([{ role: "user", content: userMessage }]);
         setVideoUrl(null);
         setYoutubeLinks([]);
+      } else {
+        // Append user message to ongoing session
+        setMessages((prev) => [...prev, { role: "user", content: userMessage }]);
       }
 
       const res = await fetch(`${BASE_URL}/chat/`, {
@@ -88,8 +92,8 @@ export function ChatProvider({ children }) {
       const data = await res.json();
 
       if (Array.isArray(data.messages)) {
-        setMessages(data.messages);
-        setSessionId(data.session_id);
+        setMessages((prev) => [...prev, ...data.messages]);
+        setSessionId(sid);
         setVideoUrl(data.video_url || null);
 
         setYoutubeLinks((prevLinks) => {
@@ -103,9 +107,9 @@ export function ChatProvider({ children }) {
           return allLinks;
         });
       } else if (data.reply) {
-        setMessages([
-          { role: "user", content: userMessage },
-          { role: "assistant", content: data.reply }
+        setMessages((prev) => [
+          ...prev,
+          { role: "assistant", content: data.reply },
         ]);
         setSessionId(sid);
         setVideoUrl(data.video_url || null);
@@ -122,7 +126,9 @@ export function ChatProvider({ children }) {
   };
 
   return (
-    <ChatContext.Provider value={{ messages, sendMessage, loading, videoUrl, youtubeLinks }}>
+    <ChatContext.Provider
+      value={{ messages, sendMessage, loading, videoUrl, youtubeLinks }}
+    >
       {children}
     </ChatContext.Provider>
   );

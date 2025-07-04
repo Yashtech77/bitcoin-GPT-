@@ -16,7 +16,7 @@ const SideNav = ({ openToggle, setOpenToggle }) => {
   const [loading, setLoading] = useState(false);
   const [renamingId, setRenamingId] = useState(null);
   const [renameValue, setRenameValue] = useState("");
-  const { setCurrentSessionId } = useSession();
+  const { currentSessionId, setCurrentSessionId } = useSession(); // ✅ Updated here
   const [openDropdownId, setOpenDropdownId] = useState(null);
   const [dropdownPosition, setDropdownPosition] = useState({ left: 0, top: 0 });
   const { messages } = useChat();
@@ -154,11 +154,15 @@ const SideNav = ({ openToggle, setOpenToggle }) => {
               sessions.map((session, idx) => (
                 <div
                   key={session.session_id || idx}
-                  className="relative group bg-white text-[#6e1c1c] hover:bg-[#E22B2B] hover:text-white rounded-full px-2 py-2 flex justify-between items-center cursor-pointer"
+                  className={`relative group rounded-full px-2 py-2 flex justify-between items-center cursor-pointer ${
+                    currentSessionId === session.session_id
+                      ? "bg-[#E22B2B] text-white"
+                      : "bg-white text-[#6e1c1c] hover:bg-[#E22B2B] hover:text-white"
+                  }`}
                   onClick={() => {
                     setCurrentSessionId(session.session_id);
                     if (window.innerWidth < 768) {
-                      setOpenToggle(false); // ✅ Close SideNav on mobile
+                      setOpenToggle(false);
                     }
                   }}
                 >
@@ -195,7 +199,7 @@ const SideNav = ({ openToggle, setOpenToggle }) => {
                     </div>
                   ) : (
                     <div className="flex justify-between items-center w-full">
-                      <span className="text-sm truncate max-w-[160px]">
+                      <span className="text-sm truncate max-w-[160px] font-medium">
                         {session.title?.trim() || "Untitled"}
                       </span>
 

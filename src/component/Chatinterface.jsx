@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import SideNav from "./SideNav";
 import { useChat } from "../context/ChatContext";
 import ReactMarkdown from "react-markdown";
@@ -12,16 +12,19 @@ export default function Chatinterface() {
   const { setCurrentSessionId } = useSession();
   const [showSideNav, setShowSideNav] = useState(false);
   const [showRightNav, setShowRightNav] = useState(false);
+  const bottomRef = useRef(null);
+  const inputRef = useRef(null);
 
   useEffect(() => {
-    console.log("Messages updated:", messages);
-  }, [messages]);
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, loading]);
 
   const handleSend = async (e) => {
     e.preventDefault();
     if (!input.trim()) return;
     await sendMessage(input);
     setInput("");
+    inputRef.current?.focus();
   };
 
   const handleSessionSelect = (sessionId) => {
@@ -88,11 +91,17 @@ export default function Chatinterface() {
                 </div>
               ))
             )}
+
             {loading && (
-              <div className="flex justify-center items-center">
-                <span className="text-gray-500">Thinking...</span>
+              <div className="flex items-center gap-2 ml-4 mb-2 animate-pulse">
+                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                <span className="ml-2 text-sm text-gray-500">Thinking...</span>
               </div>
             )}
+
+            <div ref={bottomRef}></div>
           </div>
 
           {/* Chat Input */}
@@ -103,6 +112,7 @@ export default function Chatinterface() {
               className="w-full border rounded-full px-4 py-4 pr-12 text-sm focus:outline-none"
               value={input}
               onChange={(e) => setInput(e.target.value)}
+              ref={inputRef}
               disabled={loading}
             />
             <button
