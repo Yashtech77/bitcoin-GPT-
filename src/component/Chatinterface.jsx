@@ -77,17 +77,25 @@ export default function Chatinterface() {
               messages.map((msg, idx) => (
                 <div
                   key={idx}
-                  className={`relative rounded-md shadow p-1 mb-4 text-sm md:text-base ${
+                  className={`relative rounded-md  p-1 mb-4 text-sm md:text-base ${
                     msg.role === "user"
-                      ? "bg-red-50 border border-gray-400 w-full md:w-1/2 ml-auto"
-                      : "bg-white ml-0 md:ml-4 md:mr-48"
+                      ? "text-right"
+                      : "text-left"
                   }`}
                 >
+                  <div
+                    className={`${
+                      msg.role === "user"
+                        ? "bg-red-50 border border-gray-400 text-black"
+                        : "bg-[#f5f5f5] text-black"
+                    } rounded-xl shadow px-4 py-2  inline-block max-w-[80%] break-words`}
+                  >
                   <div className="flex items-center justify-center">
                     <span className="text-black m-3">
                       <ReactMarkdown>{msg.content}</ReactMarkdown>
                     </span>
                   </div>
+                </div>
                 </div>
               ))
             )}
