@@ -1,6 +1,6 @@
 const Navbar = () => {
   return (
-    <div className="bg-[#E22B2B] h-16 flex items-center justify-between px-2">
+    <div className="bg-[#c7243b] h-16 flex items-center justify-between px-2">
       <div className="flex items-center">
         <img
           src="/logo.png"

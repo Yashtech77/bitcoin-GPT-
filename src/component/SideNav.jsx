@@ -139,7 +139,7 @@ const SideNav = ({ openToggle, setOpenToggle }) => {
     <div className="w-full h-[85vh] bg-[#ffffff] p-4 flex flex-col justify-start transition-all duration-300">
       <div>
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl font-semibold bg-[#E22B2B] text-white rounded-full w-full text-center py-2 px-4 cursor-pointer">
+          <h2 className="text-2xl font-semibold bg-[#c7243b] text-white rounded-full w-full text-center py-2 px-4 cursor-pointer">
             Chat History
           </h2>
         </div>
@@ -156,8 +156,8 @@ const SideNav = ({ openToggle, setOpenToggle }) => {
                   key={session.session_id || idx}
                   className={`relative group rounded-full px-2 py-2 flex justify-between items-center cursor-pointer ${
                     currentSessionId === session.session_id
-                      ? "bg-[#E22B2B] text-white"
-                      : "bg-white text-[#6e1c1c] hover:bg-[#E22B2B] hover:text-white"
+                      ? "bg-[#c7243b] text-white"
+                      : "bg-white text-[#6e1c1c] hover:bg-[#c7243b] hover:text-white"
                   }`}
                   onClick={() => {
                     setCurrentSessionId(session.session_id);
@@ -278,7 +278,7 @@ const SideNav = ({ openToggle, setOpenToggle }) => {
 
       <div className="mt-6 border-t border-[#6e1c1c]/20 pt-4">
         <button
-          className="w-full bg-[#E22B2B] shadow-xl/30 hover:shadow-xl/40 text-white rounded-full py-2 text-sm"
+          className="w-full bg-[#c7243b] shadow-xl/30 hover:shadow-xl/40 text-white rounded-full py-2 text-sm"
           onClick={handleNewChat}
           disabled={loading}
         >

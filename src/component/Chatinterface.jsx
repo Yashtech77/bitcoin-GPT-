@@ -3,7 +3,7 @@ import SideNav from "./SideNav";
 import { useChat } from "../context/ChatContext";
 import ReactMarkdown from "react-markdown";
 import RightNav from "./RightNav";
-import { Menu, PanelRight } from "lucide-react";
+import { Menu, PanelRight, Send } from "lucide-react";
 import { useSession } from "../context/SessionContext";
 
 export default function Chatinterface() {
@@ -66,10 +66,10 @@ export default function Chatinterface() {
             {messages.length === 0 && !loading ? (
               <div className="flex flex-col justify-center items-center h-full">
                 <img src="/logo.png" className="w-40 h-40 md:w-52 md:h-52" />
-                <h1 className="text-2xl md:text-4xl font-bold text-[#E22B2B] mt-4">
+                <h1 className="text-2xl md:text-4xl font-bold text-[#c7243b] mt-4">
                   Bitcoin GPT
                 </h1>
-                <p className="text-md md:text-lg text-[#6e1c1c] text-center">
+                <p className="text-md md:text-lg text-[#c7243b] text-center">
                   ( Where Curiosity Meets Bitcoin, Powered by AI )
                 </p>
               </div>
@@ -128,11 +128,7 @@ export default function Chatinterface() {
               className="absolute right-4 top-1/2 transform -translate-y-1/2 h-8 w-8"
               disabled={loading}
             >
-              <img
-                src="/send-message.jpg"
-                alt="send"
-                className="h-full w-full object-contain rounded-full"
-              />
+               <Send fill="#c7243b" strokeWidth={2} />
             </button>
           </form>
         </div>
