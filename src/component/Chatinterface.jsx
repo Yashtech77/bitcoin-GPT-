@@ -1,12 +1,12 @@
 import { useState, useEffect, useRef } from "react";
 import SideNav from "./SideNav";
 import { useChat } from "../context/ChatContext";
+import { useSession } from "../context/SessionContext";
+import RightNav from "./RightNav";
+import { Menu, PanelRight, Send } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
-import RightNav from "./RightNav";
-import { Menu, PanelRight, Send } from "lucide-react";
-import { useSession } from "../context/SessionContext";
 
 export default function Chatinterface() {
   const [input, setInput] = useState("");
@@ -18,7 +18,7 @@ export default function Chatinterface() {
     videoUrl,
     youtubeLinks,
   } = useChat();
-  const { setCurrentSessionId, currentSessionId } = useSession();
+  const { currentSessionId, setCurrentSessionId } = useSession();
   const [showSideNav, setShowSideNav] = useState(false);
   const [showRightNav, setShowRightNav] = useState(false);
   const bottomRef = useRef(null);
@@ -41,8 +41,7 @@ export default function Chatinterface() {
     setShowSideNav(false);
   };
 
-  const isInputDisabled =
-    loading || sessionLoading || !currentSessionId;
+  const isInputDisabled = loading || sessionLoading || !currentSessionId;
 
   return (
     <div className="w-full h-[89vh] bg-blue-100 p-2 md:p-4">
@@ -94,78 +93,110 @@ export default function Chatinterface() {
                 </p>
               </div>
             ) : (
-              messages.map((msg, idx) => (
-                <div
-                  key={idx}
-                  className={`relative rounded-md p-1 mb-4 text-sm md:text-base ${
-                    msg.role === "user" ? "text-right" : "text-left"
-                  }`}
-                >
+              messages.map((msg, idx) => {
+                const isAssistant = msg.role === "assistant";
+
+                const content = isAssistant
+                  ? msg.content
+                      .replace(/\n•\s+/g, "\n- ")
+                      .replace(/\n-\s+/g, "\n\n- ")
+                      .replace(/\n{3,}/g, "\n\n")
+                  : msg.content;
+
+                return (
                   <div
-                    className={`${
-                      msg.role === "user"
-                        ? "bg-red-50 border border-gray-400 text-black text-right"
-                        : "bg-[#f5f5f5] text-black text-left"
-                    } rounded-xl shadow px-4 py-2 inline-block max-w-[80%] break-words`}
+                    key={idx}
+                    className={`relative rounded-md p-1 mb-4 text-sm md:text-base ${
+                      msg.role === "user" ? "text-right" : "text-left"
+                    }`}
                   >
-                    <ReactMarkdown
-                      children={msg.content.trim()}
-                      remarkPlugins={[remarkGfm]}
-                      rehypePlugins={[rehypeRaw]}
-                      components={{
-                        h1: ({ node, ...props }) => (
-                          <h1 className="text-xl font-bold mt-4 mb-2" {...props} />
-                        ),
-                        h2: ({ node, ...props }) => (
-                          <h2 className="text-lg font-semibold mt-4 mb-2" {...props} />
-                        ),
-                        h3: ({ node, ...props }) => (
-                          <h3 className="text-md font-semibold mt-3 mb-1" {...props} />
-                        ),
-                        p: ({ node, ...props }) => (
-                          <p className="mb-2 leading-relaxed" {...props} />
-                        ),
-                        ul: ({ node, ...props }) => (
-                          <ul
-                            className="list-disc list-inside ml-4 space-y-1 text-left"
-                            {...props}
-                          />
-                        ),
-                        li: ({ node, ...props }) => (
-                          <li className="text-sm md:text-base" {...props} />
-                        ),
-                        code({ node, inline, className, children, ...props }) {
-                          return !inline ? (
-                            <pre className="bg-gray-900 text-white p-3 rounded-md overflow-x-auto text-sm">
-                              <code className={className} {...props}>
+                    <div
+                      className={`${
+                        isAssistant
+                          ? "bg-[#f5f5f5] text-black"
+                          : "bg-red-50 border border-gray-400 text-black"
+                      } rounded-xl shadow px-4 py-2 inline-block max-w-[80%] break-words text-left`}
+                    >
+                      <ReactMarkdown
+                        children={msg.content.trim()}
+                        remarkPlugins={[remarkGfm]}
+                        rehypePlugins={[rehypeRaw]}
+                        components={{
+                          h1: ({ node, ...props }) => (
+                            <h1
+                              className="text-xl font-bold mt-4 mb-2"
+                              {...props}
+                            />
+                          ),
+                          h2: ({ node, ...props }) => (
+                            <h2
+                              className="text-lg font-semibold mt-4 mb-2"
+                              {...props}
+                            />
+                          ),
+                          h3: ({ node, ...props }) => (
+                            <h3
+                              className="text-md font-semibold mt-3 mb-1"
+                              {...props}
+                            />
+                          ),
+                          p: ({ node, ...props }) => (
+                            <p className="mb-2 leading-relaxed" {...props} />
+                          ),
+                          ul: ({ node, ...props }) => (
+                            <ul
+                              className="list-disc pl-6 space-y-1 text-left"
+                              {...props}
+                            />
+                          ),
+                          ol: ({ node, ...props }) => (
+                            <ol
+                              className="list-decimal pl-6 space-y-1 text-left"
+                              {...props}
+                            />
+                          ),
+                          li: ({ node, ...props }) => (
+                            <li className="text-sm md:text-base" {...props} />
+                          ),
+                          code({
+                            node,
+                            inline,
+                            className,
+                            children,
+                            ...props
+                          }) {
+                            return !inline ? (
+                              <pre className="bg-gray-900 text-white p-3 rounded-md overflow-x-auto text-sm">
+                                <code className={className} {...props}>
+                                  {children}
+                                </code>
+                              </pre>
+                            ) : (
+                              <code className="bg-gray-200 text-sm rounded px-1 py-0.5">
                                 {children}
                               </code>
-                            </pre>
-                          ) : (
-                            <code className="bg-gray-200 text-sm rounded px-1 py-0.5">
-                              {children}
-                            </code>
-                          );
-                        },
-                        blockquote: ({ node, ...props }) => (
-                          <blockquote
-                            className="border-l-4 border-gray-400 pl-4 italic text-gray-600"
-                            {...props}
-                          />
-                        ),
-                        a: ({ node, ...props }) => (
-                          <a
-                            {...props}
-                            className="text-blue-600 underline hover:text-blue-800"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          />
-                        ),
-                      }}
-                    />
+                            );
+                          },
+                          blockquote: ({ node, ...props }) => (
+                            <blockquote
+                              className="border-l-4 border-gray-400 pl-4 italic text-gray-600"
+                              {...props}
+                            />
+                          ),
+                          a: ({ node, ...props }) => (
+                            <a
+                              {...props}
+                              className="text-blue-600 underline hover:text-blue-800"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            />
+                          ),
+                        }}
+                      />
+                    </div>
                   </div>
-                </div>
-              ))
+                );
+              })
             )}
 
             {loading && (
@@ -176,11 +207,10 @@ export default function Chatinterface() {
                 <span className="ml-2 text-sm text-gray-500">Thinking...</span>
               </div>
             )}
-
             <div ref={bottomRef}></div>
           </div>
 
-          {/* Chat Input with Spinner */}
+          {/* Chat Input */}
           <form className="relative mt-2 w-full" onSubmit={handleSend}>
             <input
               type="text"
@@ -200,13 +230,11 @@ export default function Chatinterface() {
                 }
               }}
             />
-
             {sessionLoading && (
               <div className="absolute right-12 top-1/2 transform -translate-y-1/2">
                 <div className="h-4 w-4 border-2 border-red-500 border-t-transparent rounded-full animate-spin"></div>
               </div>
             )}
-
             <button
               type="submit"
               className="absolute right-4 top-1/2 transform -translate-y-1/2 h-8 w-8"

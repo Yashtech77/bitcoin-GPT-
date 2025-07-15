@@ -24,7 +24,7 @@ const RightNav = () => {
   const handleClosePopup = () => setSelectedVideo(null);
 
   return (
-    <div className="w-64  rounded-md p-4 flex flex-col items-center relative border border-blue-300">
+    <div className="w-64  rounded-md p-4 flex flex-col items-center relative ">
       <h2 className="text-2xl font-semibold bg-[#c7243b] text-white rounded-full w-full text-center py-2 px-4 cursor-pointer">
         Video
       </h2>
