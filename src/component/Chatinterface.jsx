@@ -18,7 +18,7 @@ export default function Chatinterface() {
     videoUrl,
     youtubeLinks,
   } = useChat();
-  const { setCurrentSessionId } = useSession();
+  const { setCurrentSessionId, currentSessionId } = useSession();
   const [showSideNav, setShowSideNav] = useState(false);
   const [showRightNav, setShowRightNav] = useState(false);
   const bottomRef = useRef(null);
@@ -41,7 +41,8 @@ export default function Chatinterface() {
     setShowSideNav(false);
   };
 
-  const isInputDisabled = loading || sessionLoading;
+  const isInputDisabled =
+    loading || sessionLoading || !currentSessionId;
 
   return (
     <div className="w-full h-[89vh] bg-blue-100 p-2 md:p-4">
@@ -103,11 +104,12 @@ export default function Chatinterface() {
                   <div
                     className={`${
                       msg.role === "user"
-                        ? "bg-red-50 border border-gray-400 text-black"
-                        : "bg-[#f5f5f5] text-black"
-                    } rounded-xl shadow px-4 py-2 inline-block max-w-[80%] break-words text-left`}
+                        ? "bg-red-50 border border-gray-400 text-black text-right"
+                        : "bg-[#f5f5f5] text-black text-left"
+                    } rounded-xl shadow px-4 py-2 inline-block max-w-[80%] break-words`}
                   >
                     <ReactMarkdown
+                      children={msg.content.trim()}
                       remarkPlugins={[remarkGfm]}
                       rehypePlugins={[rehypeRaw]}
                       components={{
@@ -124,22 +126,32 @@ export default function Chatinterface() {
                           <p className="mb-2 leading-relaxed" {...props} />
                         ),
                         ul: ({ node, ...props }) => (
-                          <ul className="list-disc list-inside space-y-1 text-left" {...props} />
+                          <ul
+                            className="list-disc list-inside ml-4 space-y-1 text-left"
+                            {...props}
+                          />
                         ),
                         li: ({ node, ...props }) => (
-                          <li className="ml-2 text-sm md:text-base" {...props} />
+                          <li className="text-sm md:text-base" {...props} />
                         ),
                         code({ node, inline, className, children, ...props }) {
                           return !inline ? (
                             <pre className="bg-gray-900 text-white p-3 rounded-md overflow-x-auto text-sm">
-                              <code className={className} {...props}>{children}</code>
+                              <code className={className} {...props}>
+                                {children}
+                              </code>
                             </pre>
                           ) : (
-                            <code className="bg-gray-200 text-sm rounded px-1 py-0.5">{children}</code>
+                            <code className="bg-gray-200 text-sm rounded px-1 py-0.5">
+                              {children}
+                            </code>
                           );
                         },
                         blockquote: ({ node, ...props }) => (
-                          <blockquote className="border-l-4 border-gray-400 pl-4 italic text-gray-600" {...props} />
+                          <blockquote
+                            className="border-l-4 border-gray-400 pl-4 italic text-gray-600"
+                            {...props}
+                          />
                         ),
                         a: ({ node, ...props }) => (
                           <a
@@ -150,9 +162,7 @@ export default function Chatinterface() {
                           />
                         ),
                       }}
-                    >
-                      {msg.content}
-                    </ReactMarkdown>
+                    />
                   </div>
                 </div>
               ))
@@ -175,7 +185,9 @@ export default function Chatinterface() {
             <input
               type="text"
               placeholder={
-                sessionLoading ? "Creating session..." : "Ask Anything About bitcoin"
+                sessionLoading
+                  ? "Creating session..."
+                  : "Ask Anything About bitcoin"
               }
               className="w-full border rounded-full px-4 py-4 pr-12 text-sm focus:outline-none disabled:bg-gray-100"
               value={input}
@@ -188,11 +200,13 @@ export default function Chatinterface() {
                 }
               }}
             />
+
             {sessionLoading && (
               <div className="absolute right-12 top-1/2 transform -translate-y-1/2">
                 <div className="h-4 w-4 border-2 border-red-500 border-t-transparent rounded-full animate-spin"></div>
               </div>
             )}
+
             <button
               type="submit"
               className="absolute right-4 top-1/2 transform -translate-y-1/2 h-8 w-8"
@@ -214,7 +228,10 @@ export default function Chatinterface() {
             <div className="bg-white w-[300px] h-full p-4 overflow-y-auto">
               <RightNav />
             </div>
-            <div className="flex-1" onClick={() => setShowRightNav(false)}></div>
+            <div
+              className="flex-1"
+              onClick={() => setShowRightNav(false)}
+            ></div>
           </div>
         )}
       </div>
