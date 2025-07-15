@@ -16,7 +16,7 @@ export function ChatProvider({ children }) {
     setCurrentSessionId,
     sessions,
     setSessions,
-    fetchSessions, // ✅ get from context
+    fetchSessions,
   } = useSession();
 
   useEffect(() => {
@@ -63,7 +63,6 @@ export function ChatProvider({ children }) {
       let sid = currentSessionId;
 
       if (!sid) {
-        // Create new session
         const newSessionRes = await fetch(`${BASE_URL}/sessions/new`, {
           method: "POST",
         });
@@ -71,16 +70,11 @@ export function ChatProvider({ children }) {
         const newSessionData = await newSessionRes.json();
         sid = newSessionData.session_id;
         setCurrentSessionId(sid);
-
-        // Show user's first message immediately
         setMessages([{ role: "user", content: userMessage }]);
         setVideoUrl(null);
         setYoutubeLinks([]);
-
-        // ✅ Refresh sessions list after new session
         await fetchSessions();
       } else {
-        // Append user message to ongoing session
         setMessages((prev) => [...prev, { role: "user", content: userMessage }]);
       }
 
@@ -105,15 +99,16 @@ export function ChatProvider({ children }) {
         setSessionId(sid);
         setVideoUrl(data.video_url || null);
 
+        // ✅ Append new videos without replacing existing ones
         setYoutubeLinks((prevLinks) => {
           const newLinks = data.saved_videos || [];
-          const allLinks = [...prevLinks];
-          newLinks.forEach((link) => {
-            if (!allLinks.some((existing) => existing.url === link.url)) {
-              allLinks.push(link);
+          const combined = [...prevLinks];
+          newLinks.forEach((video) => {
+            if (!combined.some((v) => v.url === video.url)) {
+              combined.push(video);
             }
           });
-          return allLinks;
+          return combined;
         });
       } else if (data.reply) {
         setMessages((prev) => [
@@ -122,10 +117,19 @@ export function ChatProvider({ children }) {
         ]);
         setSessionId(sid);
         setVideoUrl(data.video_url || null);
-        setYoutubeLinks(data.youtube_links || []);
+
+        setYoutubeLinks((prevLinks) => {
+          const newLinks = data.youtube_links || [];
+          const combined = [...prevLinks];
+          newLinks.forEach((video) => {
+            if (!combined.some((v) => v.url === video.url)) {
+              combined.push(video);
+            }
+          });
+          return combined;
+        });
       }
 
-      // ✅ Refresh session titles (in case backend renamed title after first reply)
       await fetchSessions();
     } catch (err) {
       console.error("Error sending message:", err);
