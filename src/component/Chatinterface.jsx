@@ -108,61 +108,38 @@ export default function Chatinterface() {
                     } rounded-xl shadow px-4 py-2 inline-block max-w-[80%] break-words text-left`}
                   >
                     <ReactMarkdown
-                      children={msg.content.trim()}
                       remarkPlugins={[remarkGfm]}
                       rehypePlugins={[rehypeRaw]}
                       components={{
                         h1: ({ node, ...props }) => (
-                          <h1
-                            className="text-xl font-bold mt-4 mb-2"
-                            {...props}
-                          />
+                          <h1 className="text-xl font-bold mt-4 mb-2" {...props} />
                         ),
                         h2: ({ node, ...props }) => (
-                          <h2
-                            className="text-lg font-semibold mt-4 mb-2"
-                            {...props}
-                          />
+                          <h2 className="text-lg font-semibold mt-4 mb-2" {...props} />
                         ),
                         h3: ({ node, ...props }) => (
-                          <h3
-                            className="text-md font-semibold mt-3 mb-1"
-                            {...props}
-                          />
+                          <h3 className="text-md font-semibold mt-3 mb-1" {...props} />
                         ),
                         p: ({ node, ...props }) => (
                           <p className="mb-2 leading-relaxed" {...props} />
                         ),
                         ul: ({ node, ...props }) => (
-                          <ul
-                            className="list-disc list-inside space-y-1 text-left"
-                            {...props}
-                          />
+                          <ul className="list-disc list-inside space-y-1 text-left" {...props} />
                         ),
                         li: ({ node, ...props }) => (
-                          <li
-                            className="ml-2 text-sm md:text-base"
-                            {...props}
-                          />
+                          <li className="ml-2 text-sm md:text-base" {...props} />
                         ),
                         code({ node, inline, className, children, ...props }) {
                           return !inline ? (
                             <pre className="bg-gray-900 text-white p-3 rounded-md overflow-x-auto text-sm">
-                              <code className={className} {...props}>
-                                {children}
-                              </code>
+                              <code className={className} {...props}>{children}</code>
                             </pre>
                           ) : (
-                            <code className="bg-gray-200 text-sm rounded px-1 py-0.5">
-                              {children}
-                            </code>
+                            <code className="bg-gray-200 text-sm rounded px-1 py-0.5">{children}</code>
                           );
                         },
                         blockquote: ({ node, ...props }) => (
-                          <blockquote
-                            className="border-l-4 border-gray-400 pl-4 italic text-gray-600"
-                            {...props}
-                          />
+                          <blockquote className="border-l-4 border-gray-400 pl-4 italic text-gray-600" {...props} />
                         ),
                         a: ({ node, ...props }) => (
                           <a
@@ -173,7 +150,9 @@ export default function Chatinterface() {
                           />
                         ),
                       }}
-                    />
+                    >
+                      {msg.content}
+                    </ReactMarkdown>
                   </div>
                 </div>
               ))
@@ -191,33 +170,12 @@ export default function Chatinterface() {
             <div ref={bottomRef}></div>
           </div>
 
-          {/* Chat Input */}
-          {/* <form className="relative mt-2 w-full" onSubmit={handleSend}>
-            <input
-              type="text"
-              placeholder="Ask Anything About bitcoin"
-              className="w-full border rounded-full px-4 py-4 pr-12 text-sm focus:outline-none"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              ref={inputRef}
-              disabled={isInputDisabled}
-            />
-            <button
-              type="submit"
-              className="absolute right-4 top-1/2 transform -translate-y-1/2 h-8 w-8"
-              disabled={isInputDisabled}
-            >
-              <Send fill="#c7243b" strokeWidth={2} />
-            </button>
-          </form> */}
           {/* Chat Input with Spinner */}
           <form className="relative mt-2 w-full" onSubmit={handleSend}>
             <input
               type="text"
               placeholder={
-                sessionLoading
-                  ? "Creating session..."
-                  : "Ask Anything About bitcoin"
+                sessionLoading ? "Creating session..." : "Ask Anything About bitcoin"
               }
               className="w-full border rounded-full px-4 py-4 pr-12 text-sm focus:outline-none disabled:bg-gray-100"
               value={input}
@@ -230,14 +188,11 @@ export default function Chatinterface() {
                 }
               }}
             />
-
-            {/* Spinner shown during session creation */}
             {sessionLoading && (
               <div className="absolute right-12 top-1/2 transform -translate-y-1/2">
                 <div className="h-4 w-4 border-2 border-red-500 border-t-transparent rounded-full animate-spin"></div>
               </div>
             )}
-
             <button
               type="submit"
               className="absolute right-4 top-1/2 transform -translate-y-1/2 h-8 w-8"
@@ -259,10 +214,7 @@ export default function Chatinterface() {
             <div className="bg-white w-[300px] h-full p-4 overflow-y-auto">
               <RightNav />
             </div>
-            <div
-              className="flex-1"
-              onClick={() => setShowRightNav(false)}
-            ></div>
+            <div className="flex-1" onClick={() => setShowRightNav(false)}></div>
           </div>
         )}
       </div>

@@ -12,32 +12,24 @@ function Portal({ children }) {
 }
 
 const SideNav = ({ openToggle, setOpenToggle }) => {
-  const [sessions, setSessions] = useState([]);
+  const {
+    sessions,
+    setSessions,
+    currentSessionId,
+    setCurrentSessionId,
+    fetchSessions,
+  } = useSession(); // ✅ Global session state
   const [loading, setLoading] = useState(false);
   const [renamingId, setRenamingId] = useState(null);
   const [renameValue, setRenameValue] = useState("");
-  const { currentSessionId, setCurrentSessionId } = useSession(); // ✅ Updated here
   const [openDropdownId, setOpenDropdownId] = useState(null);
   const [dropdownPosition, setDropdownPosition] = useState({ left: 0, top: 0 });
   const { messages } = useChat();
 
   const handleToggle = () => setOpenToggle((prev) => !prev);
 
-  const fetchSessions = async () => {
-    setLoading(true);
-    try {
-      const res = await fetch(`${BASE_URL}/sessions/`);
-      const data = await res.json();
-      setSessions(data);
-    } catch (err) {
-      setSessions([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    fetchSessions();
+    fetchSessions(); // ✅ Initial session list fetch
   }, []);
 
   const handleNewChat = async () => {
@@ -64,7 +56,7 @@ const SideNav = ({ openToggle, setOpenToggle }) => {
       });
       if (!res.ok) throw new Error("Failed to create new chat session.");
       const newSession = await res.json();
-      setSessions((prev) => [newSession, ...prev]);
+      setSessions((prev) => [newSession, ...prev]); // ✅ Context update
       setCurrentSessionId(newSession.session_id);
     } catch (err) {
       toast.error("Failed to create new chat session.");

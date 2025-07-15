@@ -11,7 +11,13 @@ export function ChatProvider({ children }) {
   const [videoUrl, setVideoUrl] = useState(null);
   const [youtubeLinks, setYoutubeLinks] = useState([]);
 
-  const { currentSessionId, setCurrentSessionId } = useSession();
+  const {
+    currentSessionId,
+    setCurrentSessionId,
+    sessions,
+    setSessions,
+    fetchSessions, // ✅ get from context
+  } = useSession();
 
   useEffect(() => {
     if (!currentSessionId) {
@@ -70,6 +76,9 @@ export function ChatProvider({ children }) {
         setMessages([{ role: "user", content: userMessage }]);
         setVideoUrl(null);
         setYoutubeLinks([]);
+
+        // ✅ Refresh sessions list after new session
+        await fetchSessions();
       } else {
         // Append user message to ongoing session
         setMessages((prev) => [...prev, { role: "user", content: userMessage }]);
@@ -114,10 +123,10 @@ export function ChatProvider({ children }) {
         setSessionId(sid);
         setVideoUrl(data.video_url || null);
         setYoutubeLinks(data.youtube_links || []);
-      } else {
-        console.error("Invalid response data:", data);
-        throw new Error("Invalid response format from server");
       }
+
+      // ✅ Refresh session titles (in case backend renamed title after first reply)
+      await fetchSessions();
     } catch (err) {
       console.error("Error sending message:", err);
       alert("Failed to send message: " + err.message);
