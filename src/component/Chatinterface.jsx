@@ -85,10 +85,13 @@ export default function Chatinterface() {
             {messages.length === 0 && !loading ? (
               <div className="flex flex-col justify-center items-center h-full">
                 <img src="/logo.png" className="w-40 h-40 md:w-52 md:h-52" />
-                <h1 className="text-2xl md:text-4xl font-bold text-[#c7243b] mt-4">
+                {/* <h1 className="text-2xl md:text-4xl font-bold text-[#c7243b] mt-4">
+                 */}
+                 <h1 className="text-2xl md:text-4xl font-bold text-[orange] mt-4">
                   Bitcoin GPT
                 </h1>
-                <p className="text-md md:text-lg text-[#c7243b] text-center">
+                {/* <p className="text-md md:text-lg text-[#c7243b] text-center"> */}
+                <p className="text-md md:text-lg text-[#1f2630] text-center">
                   ( Where Curiosity Meets Bitcoin, Powered by AI )
                 </p>
               </div>
@@ -240,7 +243,9 @@ export default function Chatinterface() {
               className="absolute right-4 top-1/2 transform -translate-y-1/2 h-8 w-8"
               disabled={isInputDisabled || input.trim() === ""}
             >
-              <Send fill="#c7243b" strokeWidth={2} />
+              {/* <Send fill="#c7243b" strokeWidth={2} />
+               */}
+               <Send color="orange" />
             </button>
           </form>
         </div>

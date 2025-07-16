@@ -41,5 +41,9 @@
     animation: bounce 1.2s infinite ease-in-out;
   }
 }
+body {
+  font-family: 'Poppins', sans-serif;
+}
+
 
 }

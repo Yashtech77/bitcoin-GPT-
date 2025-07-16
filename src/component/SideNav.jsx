@@ -131,9 +131,12 @@ const SideNav = ({ openToggle, setOpenToggle }) => {
     <div className="w-full h-[85vh] bg-[#ffffff] p-4 flex flex-col justify-start transition-all duration-300">
       <div>
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl font-semibold bg-[#c7243b] text-white rounded-full w-full text-center py-2 px-4 cursor-pointer">
+          {/* <h2 className="text-2xl font-semibold bg-[#c7243b] text-white rounded-full w-full text-center py-2 px-4 cursor-pointer"> */}
+          <h2 className="text-xl font-semibold text-[#1f2630] rounded-full w-full text-center py-2 px-4 cursor-pointer">
             Chat History
+
           </h2>
+          
         </div>
 
         <div className="flex-1 min-h-0 flex flex-col">
@@ -146,10 +149,11 @@ const SideNav = ({ openToggle, setOpenToggle }) => {
               sessions.map((session, idx) => (
                 <div
                   key={session.session_id || idx}
-                  className={`relative group rounded-full px-2 py-2 flex justify-between items-center cursor-pointer ${
+                  className={`relative group rounded-xl px-2 py-2 flex justify-between items-center cursor-pointer ${
                     currentSessionId === session.session_id
-                      ? "bg-[#c7243b] text-white"
-                      : "bg-white text-[#6e1c1c] hover:bg-[#c7243b] hover:text-white"
+                      // ? "bg-[#c7243b] text-white"
+                      ? "bg-gradient-to-r from-orange-200 to-yellow-100 text-[#1f2630]"
+                      : "bg-white text-[#6e1c1c] hover:bg-[#f5d05c] hover:text-white"
                   }`}
                   onClick={() => {
                     setCurrentSessionId(session.session_id);
@@ -270,7 +274,8 @@ const SideNav = ({ openToggle, setOpenToggle }) => {
 
       <div className="mt-6 border-t border-[#6e1c1c]/20 pt-4">
         <button
-          className="w-full bg-[#c7243b] shadow-xl/30 hover:shadow-xl/40 text-white rounded-full py-2 text-sm"
+          // className="w-full bg-[#c7243b] shadow-xl/30 hover:shadow-xl/40 text-white rounded-full py-2 text-sm"
+                    className="w-full bg-gradient-to-r from-orange-400 to-yellow-400  hover:shadow-xl/40 text-[#1f2630] rounded-full py-2 text-sm"
           onClick={handleNewChat}
           disabled={loading}
         >

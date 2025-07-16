@@ -25,9 +25,11 @@ const RightNav = () => {
 
   return (
     <div className="w-64  rounded-md p-4 flex flex-col items-center relative ">
-      <h2 className="text-2xl font-semibold bg-[#c7243b] text-white rounded-full w-full text-center py-2 px-4 cursor-pointer">
+      {/* <h2 className="text-2xl font-semibold bg-[#c7243b] text-white rounded-full w-full text-center py-2 px-4 cursor-pointer"> */}
+      <h2 className="text-xl font-semibold text-[#1f2630] w-full text-center py-2 px-4 cursor-pointer">
         Video
       </h2>
+      <br />
 
       <div className="space-y-6 mt-4 w-full overflow-y-auto max-h-[75vh]">
         {youtubeLinks.length > 0 ? (
