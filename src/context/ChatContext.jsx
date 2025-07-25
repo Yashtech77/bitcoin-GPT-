@@ -5,6 +5,7 @@ const ChatContext = createContext();
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 console.log("✅ BASE_URL in production:", BASE_URL);
 
+
 export function ChatProvider({ children }) {
   const [messages, setMessages] = useState([]);
   const [sessionId, setSessionId] = useState(null);

@@ -4,7 +4,7 @@ import Chatinterface from "./component/Chatinterface";
 import Navbar from "./component/Navbar";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-
+console.log("App.jsx loaded",import.meta.env);
 function App() {
   return (
     <SessionProvider>
