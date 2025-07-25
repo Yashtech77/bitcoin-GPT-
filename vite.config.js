@@ -8,7 +8,7 @@ export default defineConfig({
   server: {
     proxy: {
       "/chat": {
-        target: "https://bitcoingpt.techjardemo.in/api/",
+        target: "https://bitcoin.jetkingbtc.tech/api/",
         changeOrigin: true,
         secure: false,
       },
