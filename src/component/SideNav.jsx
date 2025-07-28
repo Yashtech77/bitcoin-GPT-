@@ -5,8 +5,6 @@ import { useChat } from "../context/ChatContext";
 import { toast } from "react-toastify";
 import { createPortal } from "react-dom";
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL;
-
 function Portal({ children }) {
   return createPortal(children, document.body);
 }
@@ -18,89 +16,49 @@ const SideNav = ({ openToggle, setOpenToggle }) => {
     currentSessionId,
     setCurrentSessionId,
     fetchSessions,
-  } = useSession(); // ✅ Global session state
+    createNewSession,
+    deleteSession,
+    renameSession,
+  } = useSession();
+
   const [loading, setLoading] = useState(false);
   const [renamingId, setRenamingId] = useState(null);
   const [renameValue, setRenameValue] = useState("");
   const [openDropdownId, setOpenDropdownId] = useState(null);
   const [dropdownPosition, setDropdownPosition] = useState({ left: 0, top: 0 });
+
   const { messages } = useChat();
 
   const handleToggle = () => setOpenToggle((prev) => !prev);
 
   useEffect(() => {
-    fetchSessions(); // ✅ Initial session list fetch
+    fetchSessions();
   }, []);
 
   const handleNewChat = async () => {
     if (messages.length === 0) {
-      toast.warn("Please send a message before starting a new chat.", {
-        className:
-          "bg-[#E22B2B] border border-[#E22B2B] text-[#E22B2B] font-medium rounded-lg shadow-md",
-        bodyClassName: "text-sm",
-        progressClassName: "bg-[#E22B2B]",
-        icon: "",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-      });
+      toast.warn("Please send a message before starting a new chat.");
       return;
     }
 
     setLoading(true);
-    try {
-      const res = await fetch(`${BASE_URL}/sessions/new`, {
-        method: "POST",
-      });
-      if (!res.ok) throw new Error("Failed to create new chat session.");
-      const newSession = await res.json();
-      setSessions((prev) => [newSession, ...prev]); // ✅ Context update
-      setCurrentSessionId(newSession.session_id);
-    } catch (err) {
-      toast.error("Failed to create new chat session.");
-    } finally {
-      setLoading(false);
-    }
+    await createNewSession();
+    setLoading(false);
   };
 
   const handleDeleteSession = async (session_id) => {
     setLoading(true);
-    try {
-      await fetch(`${BASE_URL}/sessions/${session_id}`, {
-        method: "DELETE",
-      });
-      setSessions((prev) => prev.filter((s) => s.session_id !== session_id));
-    } catch (err) {
-      alert("Failed to delete chat session.");
-    } finally {
-      setLoading(false);
-    }
+    await deleteSession(session_id);
+    setLoading(false);
   };
 
   const handleRenameSession = async (session_id) => {
     if (!renameValue.trim()) return;
     setLoading(true);
-    try {
-      await fetch(`${BASE_URL}/sessions/${session_id}/rename`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: renameValue }),
-      });
-
-      setSessions((prev) =>
-        prev.map((s) =>
-          s.session_id === session_id ? { ...s, title: renameValue } : s
-        )
-      );
-      setRenamingId(null);
-      setRenameValue("");
-    } catch (err) {
-      alert("Failed to rename chat session.");
-    } finally {
-      setLoading(false);
-    }
+    await renameSession(session_id, renameValue);
+    setRenamingId(null);
+    setRenameValue("");
+    setLoading(false);
   };
 
   useEffect(() => {
@@ -132,11 +90,8 @@ const SideNav = ({ openToggle, setOpenToggle }) => {
       <div>
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-2xl font-semibold bg-[#c7243b] text-white rounded-full w-full text-center py-2 px-4 cursor-pointer">
-          {/* <h2 className="text-xl font-semibold text-[#1f2630] rounded-full w-full text-center py-2 px-4 cursor-pointer"> */}
             Chat History
-
           </h2>
-          
         </div>
 
         <div className="flex-1 min-h-0 flex flex-col">
@@ -151,7 +106,6 @@ const SideNav = ({ openToggle, setOpenToggle }) => {
                   key={session.session_id || idx}
                   className={`relative group rounded-xl px-2 py-2 flex justify-between items-center cursor-pointer ${
                     currentSessionId === session.session_id
-                      // ? "bg-[#c7243b] text-white"
                       ? "bg-gradient-to-r from-orange-200 to-yellow-100 text-[#1f2630]"
                       : "bg-white text-[#6e1c1c] hover:bg-[#f5d05c] hover:text-white"
                   }`}
@@ -274,8 +228,7 @@ const SideNav = ({ openToggle, setOpenToggle }) => {
 
       <div className="mt-6 border-t border-[#6e1c1c]/20 pt-4">
         <button
-          // className="w-full bg-[#c7243b] shadow-xl/30 hover:shadow-xl/40 text-white rounded-full py-2 text-sm"
-                    className="w-full bg-gradient-to-r from-orange-400 to-yellow-400  hover:shadow-xl/40 text-[#1f2630] rounded-full py-2 text-sm"
+          className="w-full bg-gradient-to-r from-orange-400 to-yellow-400 hover:shadow-xl/40 text-[#1f2630] rounded-full py-2 text-sm"
           onClick={handleNewChat}
           disabled={loading}
         >
