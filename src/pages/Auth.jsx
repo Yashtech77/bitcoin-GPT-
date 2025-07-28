@@ -14,6 +14,10 @@ export default function Auth() {
     agreed: false,
   });
   const [otp, setOtp] = useState("");
+  const [forgotStep, setForgotStep] = useState("email");
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [forgotOtp, setForgotOtp] = useState("");
+  const [newPassword, setNewPassword] = useState("");
   const otpInputRef = useRef(null);
 
   const {
@@ -25,19 +29,18 @@ export default function Auth() {
     register,
     verifyOtp,
     resendOtp,
+    forgotPassword,
+    resetPassword,
   } = useAuthContext();
 
   useEffect(() => {
-    console.log("Current step:", step);
     if (step === "otp" && otpInputRef.current) {
       otpInputRef.current.focus();
     }
   }, [step]);
 
- const handleLogin = () => {
-  console.log("Login button clicked", loginForm); 
-  login(loginForm);
-    if (!loginForm.email || !/^\S+@\S+\.\S+$/.test(loginForm.email))
+  const handleLogin = () => {
+    if (!loginForm.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(loginForm.email))
       return toast.error("Enter valid email");
     if (!loginForm.password || loginForm.password.length < 6)
       return toast.error("Password must be at least 6 characters");
@@ -45,11 +48,9 @@ export default function Auth() {
   };
 
   const handleRegister = () => {
-    console.log("Register form data:", registerForm);
-    register(registerForm);
     if (!registerForm.name || registerForm.name.length < 3)
       return toast.error("Name must be at least 3 characters");
-    if (!registerForm.email || !/^\S+@\S+\.\S+$/.test(registerForm.email))
+    if (!registerForm.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(registerForm.email))
       return toast.error("Enter valid email");
     if (!registerForm.password || registerForm.password.length < 6)
       return toast.error("Password must be at least 6 characters");
@@ -63,9 +64,44 @@ export default function Auth() {
     verifyOtp(otp);
   };
 
-  const handleForgotPassword = () => {
-    toast.info("Forgot Password? Please contact support.");
-  };
+ const handleForgotPassword = () => {
+  setStep("forgot"); // Just switch to forgot UI; don't call API here
+};
+
+const handleForgotSubmit = async () => {
+  if (!forgotEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(forgotEmail)) {
+    return toast.error("Enter valid registered email");
+  }
+
+  try {
+    const res = await forgotPassword(forgotEmail);
+    if (res) setForgotStep("reset");
+  } catch (err) {
+    console.error("Forgot password error:", err);
+  }
+};
+const handleResetSubmit = async () => {
+  if (!forgotOtp || forgotOtp.length !== 6)
+    return toast.error("Enter valid 6-digit OTP");
+  if (!newPassword || newPassword.length < 6)
+    return toast.error("New password must be at least 6 characters");
+
+  try {
+    const res = await resetPassword({
+      email: forgotEmail,
+      otp: forgotOtp,
+      newPassword, // ✅ Correct key
+    });
+
+    if (res) {
+      toast.success("Password reset successful. Please login.");
+      setStep("auth");
+    }
+  } catch (err) {
+    console.error("Reset error:", err);
+  }
+};
+
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-slate-100 to-slate-200 px-4">
@@ -107,8 +143,7 @@ export default function Auth() {
             <div className="bg-white rounded-xl shadow-lg p-6 max-w-sm w-full text-center">
               <h1 className="text-xl font-bold mb-4 text-orange-500">Verify OTP</h1>
               <p className="text-sm mb-4">
-                An OTP has been sent to <strong>{registeredEmail}</strong>. It is valid
-                for 5 minutes.
+                An OTP has been sent to <strong>{registeredEmail}</strong>. It is valid for 5 minutes.
               </p>
               <input
                 type="text"
@@ -144,7 +179,70 @@ export default function Auth() {
           </motion.div>
         )}
 
-        {step === "auth" && !success && (
+        {step === "forgot" && !success && (
+          <motion.div
+            key="forgot"
+            initial={{ opacity: 0, x: 100 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -100 }}
+            transition={{ duration: 0.4 }}
+            className="flex flex-col items-center justify-center min-h-screen w-full"
+          >
+            <div className="bg-white rounded-xl shadow-lg p-6 max-w-sm w-full text-center">
+              <h1 className="text-xl font-bold mb-4 text-orange-500">
+                {forgotStep === "email" ? "Forgot Password" : "Reset Password"}
+              </h1>
+
+              {forgotStep === "email" ? (
+                <>
+                  <input
+                    type="email"
+                    placeholder="Registered Email"
+                    className="bg-gray-200 p-2 rounded w-full mt-4 text-sm"
+                    value={forgotEmail}
+                    onChange={(e) => setForgotEmail(e.target.value)}
+                  />
+                  <button
+                    onClick={handleForgotSubmit}
+                    className="bg-gradient-to-r from-orange-400 to-yellow-400 text-white px-6 py-2 rounded mt-4 w-full"
+                  >
+                    Send OTP
+                  </button>
+                </>
+              ) : (
+                <>
+                  <input
+                    type="text"
+                    placeholder="Enter OTP"
+                    className="bg-gray-200 p-2 rounded w-full mt-4 text-sm"
+                    value={forgotOtp}
+                    onChange={(e) => setForgotOtp(e.target.value)}
+                  />
+                  <input
+                    type="password"
+                    placeholder="New Password"
+                    className="bg-gray-200 p-2 rounded w-full mt-4 text-sm"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                  />
+                  <button
+                    onClick={handleResetSubmit}
+                    className="bg-gradient-to-r from-orange-400 to-yellow-400 text-white px-6 py-2 rounded mt-4 w-full"
+                  >
+                    Reset Password
+                  </button>
+                </>
+              )}
+              <button
+                onClick={() => setStep("auth")}
+                className="text-sm text-gray-500 mt-4 hover:underline"
+              >
+                Back to Login
+              </button>
+            </div>
+          </motion.div>
+        )}
+                 {step === "auth" && !success && (
           <motion.div
             key="auth"
             initial={{ opacity: 0 }}
