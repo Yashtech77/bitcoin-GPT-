@@ -34,7 +34,9 @@ export default function Auth() {
     }
   }, [step]);
 
-  const handleLogin = () => {
+ const handleLogin = () => {
+  console.log("Login button clicked", loginForm); 
+  login(loginForm);
     if (!loginForm.email || !/^\S+@\S+\.\S+$/.test(loginForm.email))
       return toast.error("Enter valid email");
     if (!loginForm.password || loginForm.password.length < 6)
@@ -43,6 +45,8 @@ export default function Auth() {
   };
 
   const handleRegister = () => {
+    console.log("Register form data:", registerForm);
+    register(registerForm);
     if (!registerForm.name || registerForm.name.length < 3)
       return toast.error("Name must be at least 3 characters");
     if (!registerForm.email || !/^\S+@\S+\.\S+$/.test(registerForm.email))
