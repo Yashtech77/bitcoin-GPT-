@@ -101,7 +101,7 @@ const Navbar = () => {
           className="flex items-center space-x-2 focus:outline-none"
         >
           <FaUserCircle className="text-[#1f2630] text-3xl" />
-          <span className="text-[#1f2630] font-bold hidden sm:block">
+          <span className="text-[#1f2630] font-medium hidden sm:block">
             {userName}
           </span>
         </button>
@@ -129,7 +129,7 @@ const Navbar = () => {
 
       {/* Feedback Popup Modal */}
       {isFeedbackOpen && (
-         <div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-50">
+         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
 
           <div className="bg-white p-6 rounded-lg shadow-lg w-80">
             <h2 className="text-lg font-bold mb-4">Submit Feedback</h2>
