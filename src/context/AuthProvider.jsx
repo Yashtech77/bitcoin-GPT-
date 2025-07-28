@@ -263,7 +263,7 @@ export const AuthProvider = ({ children }) => {
         toast.success(data.message || "Email verified successfully!");
         storeUserSession(data);
         setSuccess(true);
-        setTimeout(() => (window.location.href = "/"), 2000);
+        setTimeout(() => (window.location.href = "/"),1000);
       } else {
         toast.error(data.detail || data.message || "OTP verification failed");
       }
