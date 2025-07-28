@@ -1,36 +1,83 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FaUserCircle } from "react-icons/fa";
+import { toast } from "react-toastify";
+
+const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
   const [feedback, setFeedback] = useState("");
+  const [userName, setUserName] = useState("User");
+
+  useEffect(() => {
+    const user = localStorage.getItem("user");
+    if (user) {
+      try {
+        const parsed = JSON.parse(user);
+        if (parsed.name) setUserName(parsed.name);
+      } catch (err) {
+        console.error("Error parsing user object", err);
+      }
+    }
+  }, []);
 
   const toggleDropdown = () => setIsOpen(!isOpen);
 
   const handleLogout = () => {
     localStorage.clear();
-    window.location.href = "/login"; // Redirect to login
+    sessionStorage.clear();
+    window.location.href = "/login";
   };
 
   const handleFeedbackSubmit = async () => {
     try {
-      const res = await fetch("/api/user/feedback", {
+      const token = localStorage.getItem("token");
+      let userId = sessionStorage.getItem("userId");
+      let sessionId = sessionStorage.getItem("sessionId");
+
+      if (!userId) {
+        const user = localStorage.getItem("user");
+        if (user) {
+          try {
+            const parsed = JSON.parse(user);
+            userId = parsed.id || 0;
+          } catch (err) {
+            console.error("Error parsing user object", err);
+          }
+        }
+      }
+
+      const payload = {
+        userId: userId ? parseInt(userId) : 0,
+        session_id: sessionId || "00000000-0000-0000-0000-000000000000",
+        feedback: feedback,
+      };
+
+      console.log("Submitting feedback with payload:", payload);
+
+      const res = await fetch(`${BASE_URL}/api/user/feedback`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ feedback }),
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: token ? `Bearer ${token}` : "",
+        },
+        body: JSON.stringify(payload),
       });
 
+      const data = await res.json();
+
       if (res.ok) {
-        alert("Feedback submitted successfully");
+        toast.success("Feedback submitted successfully");
+        console.log("Feedback API response:", data);
         setFeedback("");
         setIsFeedbackOpen(false);
       } else {
-        alert("Failed to submit feedback");
+        toast.error(data.message || "Failed to submit feedback");
       }
     } catch (error) {
       console.error(error);
-      alert("Error submitting feedback");
+      toast.error("Error submitting feedback");
     }
   };
 
@@ -54,8 +101,8 @@ const Navbar = () => {
           className="flex items-center space-x-2 focus:outline-none"
         >
           <FaUserCircle className="text-[#1f2630] text-3xl" />
-          <span className="text-[#1f2630] font-medium hidden sm:block">
-            John Doe
+          <span className="text-[#1f2630] font-bold hidden sm:block">
+            {userName}
           </span>
         </button>
 
@@ -82,7 +129,8 @@ const Navbar = () => {
 
       {/* Feedback Popup Modal */}
       {isFeedbackOpen && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+         <div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-50">
+
           <div className="bg-white p-6 rounded-lg shadow-lg w-80">
             <h2 className="text-lg font-bold mb-4">Submit Feedback</h2>
             <textarea

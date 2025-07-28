@@ -1,56 +1,81 @@
-import { useState } from "react";
+import { createContext, useContext, useState } from "react";
 import { toast } from "react-toastify";
 
+const AuthContext = createContext();
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-export function useAuth() {
+export const AuthProvider = ({ children }) => {
   const [step, setStep] = useState("auth");
   const [success, setSuccess] = useState(false);
   const [registeredEmail, setRegisteredEmail] = useState("");
 
+  // Save session data
+  const storeUserSession = (data) => {
+    const token = data.access_token || data.token;
+    if (token) {
+      localStorage.setItem("token", token);
+      sessionStorage.setItem("token", token);
+    }
+
+    if (data.user) {
+      localStorage.setItem("user", JSON.stringify(data.user));
+      sessionStorage.setItem("user_id", data.user.id);
+      sessionStorage.setItem("user_name", data.user.name);
+    }
+  };
+
+  // Login function
   const login = async (payload) => {
     try {
-      console.log("Calling:", `${BASE_URL}/api/authentication/login`);
+      const loginPayload = { ...payload, role: "user" };
+
       const res = await fetch(`${BASE_URL}/api/authentication/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(loginPayload),
       });
+
       const data = await res.json();
-      if (res.ok && data.success) {
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("user", JSON.stringify(data.user));
+      console.log("Login API Response:", data);
+
+      if (res.ok && data.message === "Login successful") {
+        toast.success("Login successful");
+        storeUserSession(data);
         setSuccess(true);
         setTimeout(() => (window.location.href = "/"), 2000);
       } else {
-        toast.error(data.message || "Login failed");
+        const msg = (data.message || data.detail || "").toLowerCase();
+        if (msg.includes("password")) {
+          toast.error("Incorrect password");
+        } else if (msg.includes("email")) {
+          toast.error("Invalid email or email not found");
+        } else {
+          toast.error(data.message || "Login failed");
+        }
       }
     } catch (err) {
       toast.error("Server error during login");
     }
   };
 
+  // Register function
   const register = async (payload) => {
     try {
-      console.log("Calling:", `${BASE_URL}/api/authentication/register`);
+      const registerPayload = { ...payload, role: "user" };
+
       const res = await fetch(`${BASE_URL}/api/authentication/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(registerPayload),
       });
 
       const data = await res.json();
+      console.log("Register API Response:", data);
 
       if (res.ok) {
-        // Always go to OTP screen on HTTP 200 OK
         setRegisteredEmail(payload.email);
-        setStep("otp");
-
-        if (data.success) {
-          toast.success("OTP sent to your email!");
-        } else {
-          toast.warn(data.message || "Please check your email for OTP");
-        }
+        setStep("otp"); // Go to OTP screen for 200 OK
+        toast.success(data.message || "OTP sent to your email!");
       } else {
         toast.error(data.message || "Registration failed");
       }
@@ -59,6 +84,7 @@ export function useAuth() {
     }
   };
 
+  // Verify OTP
   const verifyOtp = async (otp) => {
     try {
       const res = await fetch(`${BASE_URL}/api/authentication/verify-otp`, {
@@ -66,20 +92,24 @@ export function useAuth() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: registeredEmail, otp }),
       });
+
       const data = await res.json();
+      console.log("Verify OTP API Response:", data);
+
       if (res.ok && data.success) {
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("user", JSON.stringify(data.user));
+        toast.success(data.message || "Email verified successfully!");
+        storeUserSession(data);
         setSuccess(true);
         setTimeout(() => (window.location.href = "/"), 2000);
       } else {
-        toast.error(data.message || "OTP verification failed");
+        toast.error(data.detail || data.message || "OTP verification failed");
       }
     } catch (err) {
       toast.error("Server error during OTP verification");
     }
   };
 
+  // Resend OTP
   const resendOtp = async () => {
     try {
       const res = await fetch(`${BASE_URL}/api/authentication/resend-otp`, {
@@ -87,7 +117,10 @@ export function useAuth() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: registeredEmail }),
       });
+
       const data = await res.json();
+      console.log("Resend OTP API Response:", data);
+
       if (res.ok && data.success) {
         toast.success("OTP resent successfully");
       } else {
@@ -98,14 +131,22 @@ export function useAuth() {
     }
   };
 
-  return {
-    step,
-    setStep,
-    success,
-    registeredEmail,
-    login,
-    register,
-    verifyOtp,
-    resendOtp,
-  };
-}
+  return (
+    <AuthContext.Provider
+      value={{
+        step,
+        setStep,
+        success,
+        registeredEmail,
+        login,
+        register,
+        verifyOtp,
+        resendOtp,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+export const useAuthContext = () => useContext(AuthContext);

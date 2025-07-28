@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { useAuth } from "../hooks/useAuth";
+import { useAuthContext } from "../context/AuthProvider";
 import { toast } from "react-toastify";
 
 export default function Auth() {
@@ -25,7 +25,7 @@ export default function Auth() {
     register,
     verifyOtp,
     resendOtp,
-  } = useAuth();
+  } = useAuthContext();
 
   useEffect(() => {
     console.log("Current step:", step);
