@@ -379,8 +379,8 @@ const handleResetSubmit = async () => {
               <div
                 className={`hidden md:block absolute top-0 left-1/2 w-1/2 h-full overflow-hidden transition-all duration-500 ${
                   active
-                    ? "-translate-x-full rounded-l-[150px] rounded-r-none"
-                    : "rounded-r-[150px] rounded-l-none"
+                    ? "-translate-x-full rounded-l-none rounded-r-[150px]"
+                    : "rounded-r-none rounded-l-[150px]"
                 }`}
               >
                 <div
@@ -404,7 +404,7 @@ const handleResetSubmit = async () => {
                   ) : (
                     <>
                       <h1 className="text-xl md:text-2xl font-bold">
-                        Hello, Friend!
+                        Hello!
                       </h1>
                       <p className="text-xs mt-2">
                         Don&apos;t have an account? Register now.
