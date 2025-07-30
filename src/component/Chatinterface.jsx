@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react";
 import SideNav from "./SideNav";
 import { useChat } from "../context/ChatContext";
@@ -18,11 +19,56 @@ export default function Chatinterface() {
     videoUrl,
     youtubeLinks,
   } = useChat();
+  
   const { currentSessionId, setCurrentSessionId } = useSession();
+  const [hasUsedSession, setHasUsedSession] = useState(false);
+
   const [showSideNav, setShowSideNav] = useState(false);
   const [showRightNav, setShowRightNav] = useState(false);
   const bottomRef = useRef(null);
   const inputRef = useRef(null);
+
+  // ✅ Automatically create a new session after login if none exists
+const createNewSession = async () => {
+  try {
+    const token = localStorage.getItem("token"); // 🔐 Get token from local storage
+
+    const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/sessions/new`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`, // ✅ Set token in headers
+      },
+    });
+
+    if (!res.ok) {
+      throw new Error(`HTTP error! Status: ${res.status}`);
+    }
+
+    const data = await res.json();
+
+    setCurrentSessionId(data.session_id || data.id); // Adjust based on your backend response
+  } catch (err) {
+    console.error("Error creating session:", err);
+  }
+};
+
+
+
+const hasCreatedRef = useRef(false); // 🛡 Prevent double call
+
+useEffect(() => {
+  if (!currentSessionId && !hasCreatedRef.current) {
+    hasCreatedRef.current = true; // ✅ Lock once
+    createNewSession();
+  }
+}, []);
+
+  useEffect(() => {
+    if (currentSessionId && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [currentSessionId]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -34,6 +80,8 @@ export default function Chatinterface() {
     await sendMessage(input);
     setInput("");
     inputRef.current?.focus();
+    setHasUsedSession(true); // mark the session as used
+
   };
 
   const handleSessionSelect = (sessionId) => {
@@ -58,22 +106,28 @@ export default function Chatinterface() {
       <div className="flex h-full gap-2 md:gap-4 md:flex-row flex-col">
         {/* Desktop SideNav */}
         <div className="hidden md:block w-[250px] h-[87vh] bg-white rounded-lg p-2">
-          <SideNav
-            openToggle={true}
-            setOpenToggle={setShowSideNav}
-            onSessionSelect={handleSessionSelect}
-          />
+        <SideNav
+  openToggle={true}
+  setOpenToggle={setShowSideNav}
+  onSessionSelect={handleSessionSelect}
+  hasUsedSession={hasUsedSession}              // ✅ pass state
+  setHasUsedSession={setHasUsedSession}        // ✅ pass setter
+/>
+
         </div>
 
         {/* Mobile SideNav */}
         {showSideNav && (
           <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex">
             <div className="bg-white w-[250px] h-full p-2 overflow-y-auto">
-              <SideNav
-                openToggle={true}
-                setOpenToggle={setShowSideNav}
-                onSessionSelect={handleSessionSelect}
-              />
+            <SideNav
+  openToggle={true}
+  setOpenToggle={setShowSideNav}
+  onSessionSelect={handleSessionSelect}
+  hasUsedSession={hasUsedSession}              // ✅ pass state
+  setHasUsedSession={setHasUsedSession}        // ✅ pass setter
+/>
+
             </div>
             <div className="flex-1" onClick={() => setShowSideNav(false)}></div>
           </div>
@@ -85,12 +139,9 @@ export default function Chatinterface() {
             {messages.length === 0 && !loading ? (
               <div className="flex flex-col justify-center items-center h-full">
                 <img src="/logo.png" className="w-40 h-40 md:w-52 md:h-52" />
-                {/* <h1 className="text-2xl md:text-4xl font-bold text-[#c7243b] mt-4">
-                 */}
-                 <h1 className="text-2xl md:text-4xl font-bold text-[orange] mt-4">
+                <h1 className="text-2xl md:text-4xl font-bold text-[orange] mt-4">
                   Bitcoin GPT
                 </h1>
-                {/* <p className="text-md md:text-lg text-[#c7243b] text-center"> */}
                 <p className="text-md md:text-lg text-[#1f2630] text-center">
                   ( Where Curiosity Meets Bitcoin, Powered by AI )
                 </p>
@@ -98,14 +149,6 @@ export default function Chatinterface() {
             ) : (
               messages.map((msg, idx) => {
                 const isAssistant = msg.role === "assistant";
-
-                const content = isAssistant
-                  ? msg.content
-                      .replace(/\n•\s+/g, "\n- ")
-                      .replace(/\n-\s+/g, "\n\n- ")
-                      .replace(/\n{3,}/g, "\n\n")
-                  : msg.content;
-
                 return (
                   <div
                     key={idx}
@@ -126,53 +169,30 @@ export default function Chatinterface() {
                         rehypePlugins={[rehypeRaw]}
                         components={{
                           h1: ({ node, ...props }) => (
-                            <h1
-                              className="text-xl font-bold mt-4 mb-2"
-                              {...props}
-                            />
+                            <h1 className="text-xl font-bold mt-4 mb-2" {...props} />
                           ),
                           h2: ({ node, ...props }) => (
-                            <h2
-                              className="text-lg font-semibold mt-4 mb-2"
-                              {...props}
-                            />
+                            <h2 className="text-lg font-semibold mt-4 mb-2" {...props} />
                           ),
                           h3: ({ node, ...props }) => (
-                            <h3
-                              className="text-md font-semibold mt-3 mb-1"
-                              {...props}
-                            />
+                            <h3 className="text-md font-semibold mt-3 mb-1" {...props} />
                           ),
                           p: ({ node, ...props }) => (
                             <p className="mb-2 leading-relaxed" {...props} />
                           ),
                           ul: ({ node, ...props }) => (
-                            <ul
-                              className="list-disc pl-6 space-y-1 text-left"
-                              {...props}
-                            />
+                            <ul className="list-disc pl-6 space-y-1 text-left" {...props} />
                           ),
                           ol: ({ node, ...props }) => (
-                            <ol
-                              className="list-decimal pl-6 space-y-1 text-left"
-                              {...props}
-                            />
+                            <ol className="list-decimal pl-6 space-y-1 text-left" {...props} />
                           ),
                           li: ({ node, ...props }) => (
                             <li className="text-sm md:text-base" {...props} />
                           ),
-                          code({
-                            node,
-                            inline,
-                            className,
-                            children,
-                            ...props
-                          }) {
+                          code({ node, inline, className, children, ...props }) {
                             return !inline ? (
                               <pre className="bg-gray-900 text-white p-3 rounded-md overflow-x-auto text-sm">
-                                <code className={className} {...props}>
-                                  {children}
-                                </code>
+                                <code className={className} {...props}>{children}</code>
                               </pre>
                             ) : (
                               <code className="bg-gray-200 text-sm rounded px-1 py-0.5">
@@ -243,9 +263,7 @@ export default function Chatinterface() {
               className="absolute right-4 top-1/2 transform -translate-y-1/2 h-8 w-8"
               disabled={isInputDisabled || input.trim() === ""}
             >
-              {/* <Send fill="#c7243b" strokeWidth={2} />
-               */}
-               <Send color="orange" />
+              <Send color="orange" />
             </button>
           </form>
         </div>
@@ -261,10 +279,7 @@ export default function Chatinterface() {
             <div className="bg-white w-[300px] h-full p-4 overflow-y-auto">
               <RightNav />
             </div>
-            <div
-              className="flex-1"
-              onClick={() => setShowRightNav(false)}
-            ></div>
+            <div className="flex-1" onClick={() => setShowRightNav(false)}></div>
           </div>
         )}
       </div>
