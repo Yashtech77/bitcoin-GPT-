@@ -8,7 +8,7 @@ export default defineConfig({
   server: {
     proxy: {
       "/chat": {
-        target: "VITE_API_BASE_URL=http://13.235.70.241/api",
+        target: "https://bitcoingpt.jetkingbtc.tech/api",
         changeOrigin: true,
         secure: false,
       },
