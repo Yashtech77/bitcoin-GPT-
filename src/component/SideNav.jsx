@@ -36,10 +36,16 @@ const SideNav = ({ openToggle, setOpenToggle }) => {
   }, []);
 
   const handleNewChat = async () => {
-    if (messages.length === 0) {
-      toast.warn("Please send a message before starting a new chat.");
-      return;
-    }
+    // if (messages.length === 0) {
+    //   toast.warn("Please send a message before starting a new chat.");
+    //   return;
+    
+  //   const handleNewChat = async () => {
+  // setLoading(true);
+  // await createNewSession();
+  // setLoading(false);
+// }
+
 
     setLoading(true);
     await createNewSession();
@@ -89,7 +95,7 @@ const SideNav = ({ openToggle, setOpenToggle }) => {
     <div className="w-full h-[85vh] bg-[#ffffff] p-4 flex flex-col justify-start transition-all duration-300">
       <div>
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl font-semibold bg-[#c7243b] text-white rounded-full w-full text-center py-2 px-4 cursor-pointer">
+          <h2 className="text-xl font-semibold  text-[#1f2630] rounded-full w-full text-center py-2 px-4 cursor-pointer">
             Chat History
           </h2>
         </div>

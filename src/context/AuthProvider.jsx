@@ -259,11 +259,11 @@ export const AuthProvider = ({ children }) => {
       });
       const data = await res.json();
 
-      if (res.ok && data.success) {
-        toast.success(data.message || "Email verified successfully!");
+        if (res.ok && data.message === "Email verified successfully") {
+        toast.success("Email verified successfully!");
         storeUserSession(data);
         setSuccess(true);
-        setTimeout(() => (window.location.href = "/"),1000);
+        setTimeout(() => (window.location.href = "/"), 2000);
       } else {
         toast.error(data.detail || data.message || "OTP verification failed");
       }

@@ -31,7 +31,7 @@ const RightNav = () => {
       </h2>
       <br />
 
-      <div className="space-y-6 mt-4 w-full overflow-y-auto max-h-[75vh]">
+      <div className="space-y-6  w-full overflow-y-auto max-h-[75vh] custom-scrollbar">
         {youtubeLinks.length > 0 ? (
           youtubeLinks.map((video, index) => {
             const videoId = extractVideoId(video.url);
@@ -50,10 +50,10 @@ const RightNav = () => {
                   alt={video.title || "Video thumbnail"}
                   className="w-full h-40 object-cover"
                 />
-                <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
+                <div className="absolute inset-0 flex items-center justify-center">
                   <Play className="text-white w-6 h-6" />
                 </div>
-                <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-sm p-2">
+                <div className="absolute bottom-0 left-0 right-0  text-white text-sm p-2">
                   {video.title}
                 </div>
               </div>
