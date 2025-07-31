@@ -423,7 +423,7 @@ const handleLogin = async () => {
                   onChange={(e) => setRegisterForm({ ...registerForm, email: e.target.value })}
                 />
                 <label className="text-xs text-gray-600 mt-4 w-full max-w-[300px] text-left">
-                  Date of Birth (YYYY-MM-DD)
+                  Date of Birth
                 </label>
                 <input
                   type="date"
