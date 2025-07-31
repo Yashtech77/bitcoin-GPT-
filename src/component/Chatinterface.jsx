@@ -235,24 +235,26 @@ useEffect(() => {
 
           {/* Chat Input */}
           <form className="relative mt-2 w-full" onSubmit={handleSend}>
-            <input
-              type="text"
-              placeholder={
-                sessionLoading
-                  ? "Creating session..."
-                  : "Ask Anything About bitcoin"
-              }
-              className="w-full border rounded-full px-4 py-4 pr-12 text-sm focus:outline-none disabled:bg-gray-100"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              ref={inputRef}
-              disabled={isInputDisabled}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && isInputDisabled) {
-                  e.preventDefault();
-                }
-              }}
-            />
+            <textarea
+  placeholder={
+    sessionLoading
+      ? "Creating session..."
+      : "Ask Anything About bitcoin"
+  }
+  className="w-full border rounded-xl px-4 py-4 pr-12 text-sm focus:outline-none disabled:bg-gray-100 resize-none"
+  value={input}
+  onChange={(e) => setInput(e.target.value)}
+  ref={inputRef}
+  disabled={isInputDisabled}
+  rows={1}
+  onKeyDown={(e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      if (!isInputDisabled) handleSend(e);
+    }
+  }}
+/>
+
             {sessionLoading && (
               <div className="absolute right-12 top-1/2 transform -translate-y-1/2">
                 <div className="h-4 w-4 border-2 border-red-500 border-t-transparent rounded-full animate-spin"></div>

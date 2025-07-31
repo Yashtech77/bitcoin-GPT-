@@ -43,8 +43,8 @@ export const AuthProvider = ({ children }) => {
       } else {
         const msg = (data.message || data.detail || "").toLowerCase();
         if (msg.includes("password")) toast.error("Incorrect password");
-        else if (msg.includes("email")) toast.error("Invalid email or email not found");
-        else toast.error(data.message || "Login failed");
+        else if (msg.includes("email")) toast.error("Invalid email  not found");
+        else  toast.error(data.message || data.detail || "Login failed");
       }
     } catch (err) {
       toast.error("Server error during login");
