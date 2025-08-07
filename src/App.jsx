@@ -1,3 +1,4 @@
+ 
 // import { Routes, Route, Navigate } from "react-router-dom";
 // import { SessionProvider } from "./context/SessionContext";
 // import { ChatProvider } from "./context/ChatContext";
@@ -13,6 +14,9 @@
 
 //   return (
 //     <>
+//       {/* ✅ Always available */}
+//       <ToastContainer position="top-center" autoClose={3000} />
+
 //       <Routes>
 //         <Route
 //           path="/"
@@ -22,7 +26,6 @@
 //                 <ChatProvider>
 //                   <Navbar />
 //                   <Chatinterface />
-//                   <ToastContainer position="top-center" autoClose={3000} />
 //                 </ChatProvider>
 //               </SessionProvider>
 //             ) : (
@@ -38,6 +41,7 @@
 // }
 
 // export default App;
+// src/App.jsx
 import { Routes, Route, Navigate } from "react-router-dom";
 import { SessionProvider } from "./context/SessionContext";
 import { ChatProvider } from "./context/ChatContext";
@@ -46,34 +50,35 @@ import Navbar from "./component/Navbar";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Auth from "./pages/Auth";
+import ProtectedRoute from "../Routes/ProtectedRoute"; // ✅ import it
 
 function App() {
-  const user = JSON.parse(localStorage.getItem("user"));
-  const login = !!user;
-
   return (
     <>
-      {/* ✅ Always available */}
       <ToastContainer position="top-center" autoClose={3000} />
 
       <Routes>
+        {/* ✅ Public Routes */}
+        <Route path="/login" element={<Auth />} />
+        <Route path="/register" element={<Auth />} />
+
+        {/* ✅ Protected Routes */}
         <Route
           path="/"
           element={
-            login ? (
+            <ProtectedRoute>
               <SessionProvider>
                 <ChatProvider>
                   <Navbar />
                   <Chatinterface />
                 </ChatProvider>
               </SessionProvider>
-            ) : (
-              <Navigate to="/login" replace />
-            )
+            </ProtectedRoute>
           }
         />
-        <Route path="/login" element={<Auth />} />
-        <Route path="/register" element={<Auth />} />
+
+        {/* Redirect unknown routes */}
+        <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </>
   );

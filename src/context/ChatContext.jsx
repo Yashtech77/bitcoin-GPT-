@@ -273,6 +273,8 @@ export function ChatProvider({ children }) {
 
       setCurrentSessionId(sid);
       sessionStorage.setItem("currentSessionId", sid);
+  
+
 
       if (Array.isArray(data.messages)) {
         setMessages((prev) => [...prev, ...data.messages]);

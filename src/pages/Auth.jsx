@@ -43,131 +43,134 @@ export default function Auth() {
       otpInputRef.current.focus();
     }
   }, [step]);
- 
-const handleLogin = async () => {
-  if (!loginForm.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(loginForm.email)) {
-    return toast.error("Enter a valid email");
-  }
 
-  if (!loginForm.password || loginForm.password.length < 6) {
-    return toast.error("Password must be at least 6 characters");
-  }
-
-  try {
-    const response = await login(loginForm);
-
-    // ✅ Check for successful login
-    if (response && response.token) {
-      toast.success("Login successful");
-      setStep("dashboard");
-    } else {
-      console.log("Login response:", response);
+  const handleLogin = async () => {
+    if (
+      !loginForm.email ||
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(loginForm.email)
+    ) {
+      return toast.error("Enter a valid email");
     }
 
-  } catch (error) {
-    // 🔴 Handle 401 Invalid credentials and other errors
-    if (error.response && error.response.status === 401) {
-      toast.error(error.response.data?.detail || "Invalid credentials");
-    } else {
-      toast.error("Error logging in. Please try again");
+    if (!loginForm.password || loginForm.password.length < 6) {
+      return toast.error("Password must be at least 6 characters");
     }
-  }
-};
-// const handleRegister = async () => {
-//   if (!registerForm.name || registerForm.name.trim().length < 3)
-//     return toast.error("Name must be at least 3 characters");
-//   if (
-//     !registerForm.email ||
-//     !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(registerForm.email)
-//   )
-//     return toast.error("Enter valid email");
-//   if (!registerForm.password || registerForm.password.length < 6)
-//     return toast.error("Password must be at least 6 characters");
-//   if (!registerForm.dob)
-//     return toast.error("Please select your Date of Birth");
-//   if (!registerForm.agreed)
-//     return toast.error("You must agree that you are above 18");
 
-//   try {
-//     const response = await register(registerForm);
+    try {
+      const response = await login(loginForm);
 
-//     if (response?.success) {
-//       toast.success("Registration successful. Please login.");
-//       setStep("dashboard");
-//     } else if (response?.detail === "User already exists and is verified.") {
-//       toast.error("User already exists. Please login.");
-//     } else {
-//       toast.error(response?.detail || "Registration failed. Please try again.");
-//     }
-//   } catch (error) {
-//     // Only show toast here if response was NOT handled already above
-//     if (
-//       error?.response?.data?.detail !== "User already exists and is verified."
-//     ) {
-//       toast.error(
-//         error?.response?.data?.detail ||
-//           "An unexpected error occurred. Please try again."
-//       );
-//     }
-//   }
-// };
-
- const handleRegister = async () => {
-  if (!registerForm.name || registerForm.name.trim().length < 3) {
-    return toast.error("Name must be at least 3 characters");
-  }
-
-  if (!registerForm.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(registerForm.email)) {
-    return toast.error("Enter a valid email");
-  }
-
-  if (!registerForm.password || registerForm.password.length < 6) {
-    return toast.error("Password must be at least 6 characters");
-  }
-
-  if (!registerForm.dob) {
-    return toast.error("Please select your Date of Birth");
-  }
-
-  if (!registerForm.agreed) {
-    return toast.error("You must agree that you are above 18");
-  }
-
-  try {
-    const response = await register(registerForm);
-    const data = response?.data; // ✅ Correct response extraction
-
-    if (data?.success) {
-      toast.success("Registration successful. OTP sent to your email.");
-      setOtpEmail(registerForm.email);
-      setStep("otp");
+      // ✅ Check for successful login
+      if (response && response.token) {
+        toast.success("Login successful");
+        setStep("dashboard");
+      } else {
+        console.log("Login response:", response);
+      }
+    } catch (error) {
+      // 🔴 Handle 401 Invalid credentials and other errors
+      if (error.response && error.response.status === 401) {
+        toast.error(error.response.data?.detail || "Invalid credentials");
+      } else {
+        toast.error("Error logging in. Please try again");
+      }
     }
-  } catch (error) {
-    const detail = error?.response?.data?.detail;
+  };
+  // const handleRegister = async () => {
+  //   if (!registerForm.name || registerForm.name.trim().length < 3)
+  //     return toast.error("Name must be at least 3 characters");
+  //   if (
+  //     !registerForm.email ||
+  //     !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(registerForm.email)
+  //   )
+  //     return toast.error("Enter valid email");
+  //   if (!registerForm.password || registerForm.password.length < 6)
+  //     return toast.error("Password must be at least 6 characters");
+  //   if (!registerForm.dob)
+  //     return toast.error("Please select your Date of Birth");
+  //   if (!registerForm.agreed)
+  //     return toast.error("You must agree that you are above 18");
+
+  //   try {
+  //     const response = await register(registerForm);
+
+  //     if (response?.success) {
+  //       toast.success("Registration successful. Please login.");
+  //       setStep("dashboard");
+  //     } else if (response?.detail === "User already exists and is verified.") {
+  //       toast.error("User already exists. Please login.");
+  //     } else {
+  //       toast.error(response?.detail || "Registration failed. Please try again.");
+  //     }
+  //   } catch (error) {
+  //     // Only show toast here if response was NOT handled already above
+  //     if (
+  //       error?.response?.data?.detail !== "User already exists and is verified."
+  //     ) {
+  //       toast.error(
+  //         error?.response?.data?.detail ||
+  //           "An unexpected error occurred. Please try again."
+  //       );
+  //     }
+  //   }
+  // };
+
+  const handleRegister = async () => {
+    if (!registerForm.name || registerForm.name.trim().length < 3) {
+      return toast.error("Name must be at least 3 characters");
+    }
 
     if (
-      detail ===
-      "User already registered but not verified. Please verify your email via OTP or request a new one."
+      !registerForm.email ||
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(registerForm.email)
     ) {
-      toast.info("User already registered. Resending OTP...");
+      return toast.error("Enter a valid email");
+    }
 
-      try {
-        await resendOtp({ email: registerForm.email });
-        toast.success("OTP resent successfully.");
+    if (!registerForm.password || registerForm.password.length < 6) {
+      return toast.error("Password must be at least 6 characters");
+    }
+
+    if (!registerForm.dob) {
+      return toast.error("Please select your Date of Birth");
+    }
+
+    if (!registerForm.agreed) {
+      return toast.error("You must agree that you are above 18");
+    }
+
+    try {
+      const response = await register(registerForm);
+      const data = response?.data;
+
+      if (data?.success) {
+        toast.success("Registration successful. OTP sent to your email.");
         setOtpEmail(registerForm.email);
         setStep("otp");
-      } catch (otpError) {
-        toast.error("Failed to resend OTP. Try again.");
       }
-    } else if (detail === "User already exists and is verified.") {
-      toast.error("User already exists. Please login.");
-    } else {
-      toast.error(detail || "Registration failed. Please try again.");
+    } catch (error) {
+      const detail = error?.response?.data?.detail;
+
+      if (
+        detail ===
+        "User already registered but not verified. Please verify your email via OTP or request a new one."
+      ) {
+        toast.info("User already registered. Resending OTP...");
+
+        try {
+          await resendOtp({ email: registerForm.email });
+          toast.success("OTP resent successfully.");
+          setOtpEmail(registerForm.email);
+          setStep("otp");
+        } catch (otpError) {
+          toast.error("Failed to resend OTP. Try again.");
+        }
+      } else if (detail === "User already exists and is verified.") {
+        toast.error("User already exists. Please login.");
+      } else {
+        toast.error(detail || "Registration failed. Please try again.");
+      }
     }
-  }
-};
-
-
+  };
 
   const handleVerifyOtp = () => {
     if (!otp) return toast.error("Enter OTP");
@@ -358,7 +361,10 @@ const handleLogin = async () => {
                       className="bg-gray-200 p-2 rounded w-full text-sm pr-10"
                       value={registerForm.password}
                       onChange={(e) =>
-                        setRegisterForm({ ...registerForm, password: e.target.value })
+                        setRegisterForm({
+                          ...registerForm,
+                          password: e.target.value,
+                        })
                       }
                     />
                     <button
@@ -404,25 +410,31 @@ const handleLogin = async () => {
             <div className="relative bg-white rounded-2xl shadow-lg w-full max-w-md md:max-w-2xl lg:max-w-3xl min-h-[480px] overflow-hidden">
               {/* Register */}
               <div
-                className={`absolute inset-0 h-full w-full md:w-1/2 flex flex-col justify-center items-center p-6 transition-all duration-500 ${active ? "translate-x-0 md:translate-x-full opacity-100 z-10" : "opacity-0 -z-10 md:z-0"}`}
+                className={`absolute inset-0 h-full w-full md:w-1/2 flex flex-col justify-center items-center p-6 transition-all duration-500 ${
+                  active
+                    ? "translate-x-0 md:translate-x-full opacity-100 z-10"
+                    : "opacity-0 -z-10 md:z-0"
+                }`}
               >
                 <h1 className="text-2xl font-bold">Create Account</h1>
                 {/* Registration Fields */}
-                <input
+                {/* <input
                   type="text"
                   placeholder="Name"
                   className="bg-gray-200 p-2 rounded w-full max-w-[300px] mt-4 text-sm"
                   value={registerForm.name}
                   onChange={(e) => setRegisterForm({ ...registerForm, name: e.target.value })}
-                />
+                /> */}
                 <input
                   type="email"
                   placeholder="Email"
                   className="bg-gray-200 p-2 rounded w-full max-w-[300px] mt-4 text-sm"
                   value={registerForm.email}
-                  onChange={(e) => setRegisterForm({ ...registerForm, email: e.target.value })}
+                  onChange={(e) =>
+                    setRegisterForm({ ...registerForm, email: e.target.value })
+                  }
                 />
-                <label className="text-xs text-gray-600 mt-4 w-full max-w-[300px] text-left">
+                {/* <label className="text-xs text-gray-600 mt-4 w-full max-w-[300px] text-left">
                   Date of Birth
                 </label>
                 <input
@@ -430,7 +442,7 @@ const handleLogin = async () => {
                   className="bg-gray-200 p-2 rounded w-full max-w-[300px] text-sm"
                   value={registerForm.dob}
                   onChange={(e) => setRegisterForm({ ...registerForm, dob: e.target.value })}
-                />
+                /> */}
                 {/* Password Visibility Field */}
                 <div className="relative w-full max-w-[300px] mt-4">
                   <input
@@ -438,7 +450,12 @@ const handleLogin = async () => {
                     placeholder="Password"
                     className="bg-gray-200 p-2 rounded w-full text-sm pr-10"
                     value={registerForm.password}
-                    onChange={(e) => setRegisterForm({ ...registerForm, password: e.target.value })}
+                    onChange={(e) =>
+                      setRegisterForm({
+                        ...registerForm,
+                        password: e.target.value,
+                      })
+                    }
                   />
                   <button
                     type="button"
@@ -456,32 +473,39 @@ const handleLogin = async () => {
                   Sign Up
                 </button> */}
                 {/* Age Checkbox */}
-<div className="flex items-center mt-4 max-w-[300px] w-full">
-  <input
-    type="checkbox"
-    id="ageCheckbox"
-    className="mr-2"
-    checked={registerForm.agreed}
-    onChange={(e) =>
-      setRegisterForm({ ...registerForm, agreed: e.target.checked })
-    }
-  />
-  <label htmlFor="ageCheckbox" className="text-sm text-gray-700">
-    I am 18 years or older
-  </label>
-</div>
+                <div className="flex items-center mt-4 max-w-[300px] w-full">
+                  <input
+                    type="checkbox"
+                    id="ageCheckbox"
+                    className="mr-2"
+                    checked={registerForm.agreed}
+                    onChange={(e) =>
+                      setRegisterForm({
+                        ...registerForm,
+                        agreed: e.target.checked,
+                      })
+                    }
+                  />
+                  <label
+                    htmlFor="ageCheckbox"
+                    className="text-sm text-gray-700"
+                  >
+                    I am 18 years or older
+                  </label>
+                </div>
 
-{/* Sign Up Button */}
-<button
-  onClick={handleRegister}
-  className="bg-gradient-to-r from-orange-400 to-yellow-400 hover:opacity-90 text-white px-6 py-2 rounded text-xs uppercase mt-4"
->
-  Sign Up
-</button>
+                {/* Sign Up Button */}
+                <button
+                  onClick={handleRegister}
+                  className="bg-gradient-to-r from-orange-400 to-yellow-400 hover:opacity-90 text-white px-6 py-2 rounded text-xs uppercase mt-4 hover:shadow-lg"
+                >
+                  Sign Up
+                </button>
 
                 {/* Toggle to Login */}
                 <button
                   onClick={() => setActive(false)}
+                  
                   className="text-xs text-blue-500 mt-2 hover:underline md:hidden"
                 >
                   Already have an account? Sign In
@@ -490,7 +514,11 @@ const handleLogin = async () => {
 
               {/* Login */}
               <div
-                className={`absolute inset-0 h-full w-full md:w-1/2 flex flex-col justify-center items-center p-6 transition-all duration-500 ${active ? "opacity-0 -z-10 md:z-0 -translate-x-full md:translate-x-0" : "opacity-100 z-10"}`}
+                className={`absolute inset-0 h-full w-full md:w-1/2 flex flex-col justify-center items-center p-6 transition-all duration-500 ${
+                  active
+                    ? "opacity-0 -z-10 md:z-0 -translate-x-full md:translate-x-0"
+                    : "opacity-100 z-10"
+                }`}
               >
                 <h1 className="text-2xl font-bold">Sign In</h1>
                 {/* Login Fields */}
@@ -499,7 +527,9 @@ const handleLogin = async () => {
                   placeholder="Email"
                   className="bg-gray-200 p-2 rounded w-full max-w-[300px] mt-4 text-sm"
                   value={loginForm.email}
-                  onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })}
+                  onChange={(e) =>
+                    setLoginForm({ ...loginForm, email: e.target.value })
+                  }
                 />
                 {/* Password Visibility Field */}
                 <div className="relative w-full max-w-[300px] mt-4">
@@ -508,7 +538,9 @@ const handleLogin = async () => {
                     placeholder="Password"
                     className="bg-gray-200 p-2 rounded w-full text-sm pr-10"
                     value={loginForm.password}
-                    onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
+                    onChange={(e) =>
+                      setLoginForm({ ...loginForm, password: e.target.value })
+                    }
                   />
                   <button
                     type="button"
@@ -521,7 +553,7 @@ const handleLogin = async () => {
                 {/* Sign In Button */}
                 <button
                   onClick={handleLogin}
-                  className="bg-gradient-to-r from-orange-400 to-yellow-400 hover:opacity-99 text-white px-6 py-2 rounded text-xs uppercase mt-4"
+                  className="bg-gradient-to-r from-orange-400 to-yellow-400 hover:opacity-99 text-white px-6 py-2 rounded text-xs uppercase mt-4 hover:shadow-lg"
                 >
                   Sign In
                 </button>
@@ -558,7 +590,7 @@ const handleLogin = async () => {
                       </p>
                       <button
                         onClick={() => setActive(false)}
-                        className="border border-white mt-4 px-4 py-1 rounded text-xs uppercase"
+                        className="border border-white mt-4 px-4 py-1 rounded text-xs uppercase hover:shadow-lg"
                       >
                         Sign In
                       </button>
@@ -571,7 +603,7 @@ const handleLogin = async () => {
                       </p>
                       <button
                         onClick={() => setActive(true)}
-                        className="border border-white mt-4 px-4 py-1 rounded text-xs uppercase"
+                        className="border border-white mt-4 px-4 py-1 rounded text-xs uppercase hover:shadow-lg"
                       >
                         Sign Up
                       </button>

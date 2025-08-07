@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import SideNav from "./SideNav";
 import { useChat } from "../context/ChatContext";
@@ -19,7 +18,7 @@ export default function Chatinterface() {
     videoUrl,
     youtubeLinks,
   } = useChat();
-  
+
   const { currentSessionId, setCurrentSessionId } = useSession();
   const [hasUsedSession, setHasUsedSession] = useState(false);
 
@@ -29,40 +28,41 @@ export default function Chatinterface() {
   const inputRef = useRef(null);
 
   // ✅ Automatically create a new session after login if none exists
-const createNewSession = async () => {
-  try {
-    const token = localStorage.getItem("token"); // 🔐 Get token from local storage
+  const createNewSession = async () => {
+    try {
+      const token = localStorage.getItem("token"); // 🔐 Get token from local storage
 
-    const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/sessions/new`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`, // ✅ Set token in headers
-      },
-    });
+      const res = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL}/api/sessions/new`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`, // ✅ Set token in headers
+          },
+        }
+      );
 
-    if (!res.ok) {
-      throw new Error(`HTTP error! Status: ${res.status}`);
+      if (!res.ok) {
+        throw new Error(`HTTP error! Status: ${res.status}`);
+      }
+
+      const data = await res.json();
+
+      setCurrentSessionId(data.session_id || data.id); // Adjust based on your backend response
+    } catch (err) {
+      console.error("Error creating session:", err);
     }
+  };
 
-    const data = await res.json();
+  const hasCreatedRef = useRef(false); // 🛡 Prevent double call
 
-    setCurrentSessionId(data.session_id || data.id); // Adjust based on your backend response
-  } catch (err) {
-    console.error("Error creating session:", err);
-  }
-};
-
-
-
-const hasCreatedRef = useRef(false); // 🛡 Prevent double call
-
-useEffect(() => {
-  if (!currentSessionId && !hasCreatedRef.current) {
-    hasCreatedRef.current = true; // ✅ Lock once
-    createNewSession();
-  }
-}, []);
+  useEffect(() => {
+    if (!currentSessionId && !hasCreatedRef.current) {
+      hasCreatedRef.current = true; // ✅ Lock once
+      createNewSession();
+    }
+  }, []);
 
   useEffect(() => {
     if (currentSessionId && inputRef.current) {
@@ -80,8 +80,7 @@ useEffect(() => {
     await sendMessage(input);
     setInput("");
     inputRef.current?.focus();
-    setHasUsedSession(true); // mark the session as used
-
+    setHasUsedSession(true); 
   };
 
   const handleSessionSelect = (sessionId) => {
@@ -106,28 +105,26 @@ useEffect(() => {
       <div className="flex h-full gap-2 md:gap-4 md:flex-row flex-col">
         {/* Desktop SideNav */}
         <div className="hidden md:block w-[250px] h-[87vh] bg-white rounded-lg p-2">
-        <SideNav
-  openToggle={true}
-  setOpenToggle={setShowSideNav}
-  onSessionSelect={handleSessionSelect}
-  hasUsedSession={hasUsedSession}              // ✅ pass state
-  setHasUsedSession={setHasUsedSession}        // ✅ pass setter
-/>
-
+          <SideNav
+            openToggle={true}
+            setOpenToggle={setShowSideNav}
+            onSessionSelect={handleSessionSelect}
+            hasUsedSession={hasUsedSession} // ✅ pass state
+            setHasUsedSession={setHasUsedSession} // ✅ pass setter
+          />
         </div>
 
         {/* Mobile SideNav */}
         {showSideNav && (
           <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex">
             <div className="bg-white w-[250px] h-full p-2 overflow-y-auto">
-            <SideNav
-  openToggle={true}
-  setOpenToggle={setShowSideNav}
-  onSessionSelect={handleSessionSelect}
-  hasUsedSession={hasUsedSession}              // ✅ pass state
-  setHasUsedSession={setHasUsedSession}        // ✅ pass setter
-/>
-
+              <SideNav
+                openToggle={true}
+                setOpenToggle={setShowSideNav}
+                onSessionSelect={handleSessionSelect}
+                hasUsedSession={hasUsedSession} // ✅ pass state
+                setHasUsedSession={setHasUsedSession} // ✅ pass setter
+              />
             </div>
             <div className="flex-1" onClick={() => setShowSideNav(false)}></div>
           </div>
@@ -156,12 +153,20 @@ useEffect(() => {
                       msg.role === "user" ? "text-right" : "text-left"
                     }`}
                   >
+                    {/* <div
+                      className={`${
+                        isAssistant
+                          ? "bg-[#f5f5f5] text-black"
+                          : "bg-red-50 border border-gray-400 text-black"
+                      } rounded-xl shadow px-4 py-2 inline-block max-w-[80%] break-words text-left`}
+                    > */}
                     <div
                       className={`${
                         isAssistant
                           ? "bg-[#f5f5f5] text-black"
                           : "bg-red-50 border border-gray-400 text-black"
                       } rounded-xl shadow px-4 py-2 inline-block max-w-[80%] break-words text-left`}
+                      style={{ whiteSpace: "pre-wrap" }} 
                     >
                       <ReactMarkdown
                         children={msg.content.trim()}
@@ -169,30 +174,53 @@ useEffect(() => {
                         rehypePlugins={[rehypeRaw]}
                         components={{
                           h1: ({ node, ...props }) => (
-                            <h1 className="text-xl font-bold mt-4 mb-2" {...props} />
+                            <h1
+                              className="text-xl font-bold mt-4 mb-2"
+                              {...props}
+                            />
                           ),
                           h2: ({ node, ...props }) => (
-                            <h2 className="text-lg font-semibold mt-4 mb-2" {...props} />
+                            <h2
+                              className="text-lg font-semibold mt-4 mb-2"
+                              {...props}
+                            />
                           ),
                           h3: ({ node, ...props }) => (
-                            <h3 className="text-md font-semibold mt-3 mb-1" {...props} />
+                            <h3
+                              className="text-md font-semibold mt-3 mb-1"
+                              {...props}
+                            />
                           ),
                           p: ({ node, ...props }) => (
                             <p className="mb-2 leading-relaxed" {...props} />
                           ),
                           ul: ({ node, ...props }) => (
-                            <ul className="list-disc pl-6 space-y-1 text-left" {...props} />
+                            <ul
+                              className="list-disc pl-6 space-y-1 text-left"
+                              {...props}
+                            />
                           ),
                           ol: ({ node, ...props }) => (
-                            <ol className="list-decimal pl-6 space-y-1 text-left" {...props} />
+                            <ol
+                              className="list-decimal pl-6 space-y-1 text-left"
+                              {...props}
+                            />
                           ),
                           li: ({ node, ...props }) => (
                             <li className="text-sm md:text-base" {...props} />
                           ),
-                          code({ node, inline, className, children, ...props }) {
+                          code({
+                            node,
+                            inline,
+                            className,
+                            children,
+                            ...props
+                          }) {
                             return !inline ? (
                               <pre className="bg-gray-900 text-white p-3 rounded-md overflow-x-auto text-sm">
-                                <code className={className} {...props}>{children}</code>
+                                <code className={className} {...props}>
+                                  {children}
+                                </code>
                               </pre>
                             ) : (
                               <code className="bg-gray-200 text-sm rounded px-1 py-0.5">
@@ -236,24 +264,24 @@ useEffect(() => {
           {/* Chat Input */}
           <form className="relative mt-2 w-full" onSubmit={handleSend}>
             <textarea
-  placeholder={
-    sessionLoading
-      ? "Creating session..."
-      : "Ask Anything About bitcoin"
-  }
-  className="w-full border rounded-xl px-4 py-4 pr-12 text-sm focus:outline-none disabled:bg-gray-100 resize-none"
-  value={input}
-  onChange={(e) => setInput(e.target.value)}
-  ref={inputRef}
-  disabled={isInputDisabled}
-  rows={1}
-  onKeyDown={(e) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      if (!isInputDisabled) handleSend(e);
-    }
-  }}
-/>
+              placeholder={
+                sessionLoading
+                  ? "Creating session..."
+                  : "Ask Anything About bitcoin"
+              }
+              className="w-full border rounded-xl px-4 py-4 pr-12 text-sm focus:outline-none disabled:bg-gray-100 resize-none"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              ref={inputRef}
+              disabled={isInputDisabled}
+              rows={1}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  if (!isInputDisabled) handleSend(e);
+                }
+              }}
+            />
 
             {sessionLoading && (
               <div className="absolute right-12 top-1/2 transform -translate-y-1/2">
@@ -281,7 +309,10 @@ useEffect(() => {
             <div className="bg-white w-[300px] h-full p-4 overflow-y-auto">
               <RightNav />
             </div>
-            <div className="flex-1" onClick={() => setShowRightNav(false)}></div>
+            <div
+              className="flex-1"
+              onClick={() => setShowRightNav(false)}
+            ></div>
           </div>
         )}
       </div>
