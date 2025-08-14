@@ -130,9 +130,9 @@ export default function Auth() {
       return toast.error("Password must be at least 6 characters");
     }
 
-    if (!registerForm.dob) {
-      return toast.error("Please select your Date of Birth");
-    }
+    // if (!registerForm.dob) {
+    //   return toast.error("Please select your Date of Birth");
+    // }
 
     if (!registerForm.agreed) {
       return toast.error("You must agree that you are above 18");
@@ -418,13 +418,13 @@ export default function Auth() {
               >
                 <h1 className="text-2xl font-bold">Create Account</h1>
                 {/* Registration Fields */}
-                {/* <input
+                 <input
                   type="text"
                   placeholder="Name"
                   className="bg-gray-200 p-2 rounded w-full max-w-[300px] mt-4 text-sm"
                   value={registerForm.name}
                   onChange={(e) => setRegisterForm({ ...registerForm, name: e.target.value })}
-                /> */}
+                /> 
                 <input
                   type="email"
                   placeholder="Email"
