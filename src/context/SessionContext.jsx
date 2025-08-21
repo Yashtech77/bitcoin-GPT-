@@ -132,33 +132,37 @@ export const SessionProvider = ({ children }) => {
   );
 
   const getAuthHeaders = () => {
-    const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+    const token = sessionStorage.getItem("token");
     return {
       "Content-Type": "application/json",
       Authorization: token ? `Bearer ${token}` : "",
     };
   };
 
-  const handleUnauthorized = () => {
-    localStorage.clear();
-    sessionStorage.clear();
-    toast.error("Session expired. Please log in again.");
-    window.location.href = "/login";
+  // ✅ Wrapper around fetch to handle 401 globally
+  const fetchWithAuth = async (url, options = {}) => {
+    const res = await fetch(url, {
+      ...options,
+      headers: {
+        ...getAuthHeaders(),
+        ...(options.headers || {}),
+      },
+    });
+
+    if (res.status === 401) {
+      toast.error("Session expired. Please log in again.");
+      sessionStorage.clear();
+      localStorage.clear();
+      window.location.href = "/"; // redirect to login
+      throw new Error("Unauthorized");
+    }
+
+    return res;
   };
 
   const fetchSessions = async () => {
     try {
-      const res = await fetch(`${BASE_URL}/api/sessions`, {
-        headers: getAuthHeaders(),
-      });
-
-      if (res.status === 401) {
-        handleUnauthorized();
-        return;
-      }
-
-      if (!res.ok) throw new Error("Failed to fetch sessions");
-
+      const res = await fetchWithAuth(`${BASE_URL}/api/sessions`);
       const data = await res.json();
       setSessions(data.sessions || []);
     } catch (err) {
@@ -172,22 +176,13 @@ export const SessionProvider = ({ children }) => {
       const userId = parseInt(sessionStorage.getItem("user_id"), 10);
       if (!userId || isNaN(userId)) {
         toast.error("User not found");
-        handleUnauthorized();
         return null;
       }
 
-      const res = await fetch(`${BASE_URL}/api/sessions/new`, {
+      const res = await fetchWithAuth(`${BASE_URL}/api/sessions/new`, {
         method: "POST",
-        headers: getAuthHeaders(),
         body: JSON.stringify({ userId }),
       });
-
-      if (res.status === 401) {
-        handleUnauthorized();
-        return null;
-      }
-
-      if (!res.ok) throw new Error("Failed to create session");
 
       const data = await res.json();
       setSessions((prev) => [data, ...prev]);
@@ -204,18 +199,9 @@ export const SessionProvider = ({ children }) => {
 
   const deleteSession = async (session_id) => {
     try {
-      const res = await fetch(`${BASE_URL}/api/sessions/${session_id}`, {
+      await fetchWithAuth(`${BASE_URL}/api/sessions/${session_id}`, {
         method: "DELETE",
-        headers: getAuthHeaders(),
       });
-
-      if (res.status === 401) {
-        handleUnauthorized();
-        return;
-      }
-
-      if (!res.ok) throw new Error("Failed to delete session");
-
       setSessions((prev) => prev.filter((s) => s.session_id !== session_id));
       toast.success("Session deleted");
     } catch (err) {
@@ -225,18 +211,10 @@ export const SessionProvider = ({ children }) => {
 
   const renameSession = async (session_id, newTitle) => {
     try {
-      const res = await fetch(`${BASE_URL}/api/sessions/${session_id}/rename`, {
+      await fetchWithAuth(`${BASE_URL}/api/sessions/${session_id}/rename`, {
         method: "POST",
-        headers: getAuthHeaders(),
         body: JSON.stringify({ newTitle }),
       });
-
-      if (res.status === 401) {
-        handleUnauthorized();
-        return;
-      }
-
-      if (!res.ok) throw new Error("Failed to rename session");
 
       setSessions((prev) =>
         prev.map((s) =>
